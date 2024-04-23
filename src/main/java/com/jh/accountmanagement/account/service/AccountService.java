@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class AccountService {
         log.info("초기 잔액={}", request.getInitMoney());
 
         AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException("해당 유저를 찾을 수 없습니다."));
-        List<Account> accountList = accountUser.getAccountList().stream().filter(x -> x.getDelDate() == null).toList();
+        List<Account> accountList = new ArrayList<>(accountUser.getAccountList().stream().filter(x -> x.getDelDate() == null).toList());
 
         if (accountList.size() == 10) {
             throw new AccountMaximumException("현재 소유하신 계좌가 10개이므로 더 이상 계좌를 생성할 수 없습니다.");
@@ -45,12 +46,15 @@ public class AccountService {
             }
         }
 
-        Account build = Account.builder()
+        Account account = Account.builder()
                 .accountNum(randomNumber)
                 .accountUser(accountUser)
                 .money(request.getInitMoney())
                 .build();
-        accountRepository.save(build);
-        return build.toResponse();
+        accountList.add(account);
+        accountUserRepository.save(accountUser.toBuilder()
+                .accountList(accountList)
+                .build());
+        return account.toResponse();
     }
 }
