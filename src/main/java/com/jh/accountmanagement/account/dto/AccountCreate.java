@@ -14,7 +14,6 @@ public class AccountCreate {
     @ToString
     public static class Request {
         @NotNull
-        @Min(1)
         private String userId;
 
         @NotNull
