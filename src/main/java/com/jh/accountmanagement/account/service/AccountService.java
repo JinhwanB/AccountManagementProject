@@ -1,4 +1,4 @@
-package com.jh.accountmanagement.service;
+package com.jh.accountmanagement.account.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

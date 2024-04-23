@@ -1,4 +1,4 @@
-package com.jh.accountmanagement.model;
+package com.jh.accountmanagement.account.model;
 
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;

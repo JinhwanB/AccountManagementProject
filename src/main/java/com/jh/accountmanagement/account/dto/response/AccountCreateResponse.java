@@ -1,4 +1,4 @@
-package com.jh.accountmanagement.dto.response;
+package com.jh.accountmanagement.account.dto.response;
 
 import lombok.*;
 

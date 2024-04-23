@@ -1,6 +1,6 @@
-package com.jh.accountmanagement.repository;
+package com.jh.accountmanagement.account.repository;
 
-import com.jh.accountmanagement.model.Account;
+import com.jh.accountmanagement.account.model.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
