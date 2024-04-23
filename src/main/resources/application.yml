@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: accountmanagement
+
+  datasource:
+    url: jdbc:h2:mem:account_management
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+
