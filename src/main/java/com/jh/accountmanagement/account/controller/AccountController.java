@@ -1,6 +1,7 @@
 package com.jh.accountmanagement.account.controller;
 
 import com.jh.accountmanagement.account.dto.AccountCreate;
+import com.jh.accountmanagement.account.model.Account;
 import com.jh.accountmanagement.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class AccountController {
 
     @PostMapping("/account")
     public ResponseEntity<AccountCreate.Response> createAccount(@Valid @RequestBody AccountCreate.Request request) {
-        return ResponseEntity.ok(accountService.createAccount(request));
+        Account account = accountService.createAccount(request);
+        return ResponseEntity.ok(account.toResponse());
     }
 }
