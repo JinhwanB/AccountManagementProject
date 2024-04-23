@@ -18,12 +18,12 @@ public class AccountUser extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @OneToMany(mappedBy = "accountUser", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Account> accountList = new ArrayList<>();
+
     @Column(nullable = false)
     private String userId;
-
-    @OneToMany(mappedBy = "account_user")
-    @Builder.Default
-    List<Account> accountList = new ArrayList<>();
 
     @Column
     private LocalDateTime delDate;
