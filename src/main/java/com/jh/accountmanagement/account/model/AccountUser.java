@@ -4,6 +4,10 @@ import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -14,6 +18,12 @@ public class AccountUser extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(nullable = false)
     private String userId;
+
+    @OneToMany(mappedBy = "account_user")
+    List<Account> accountList = new ArrayList<>();
+
+    @Column
+    private LocalDateTime delDate;
 }
