@@ -1,5 +1,6 @@
 package com.jh.accountmanagement.account.model;
 
+import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,4 +29,12 @@ public class Account extends BaseTimeEntity {
 
     @Column
     private LocalDateTime delDate;
+
+    public AccountCreate.Response toResponse(Account account) {
+        return AccountCreate.Response.builder()
+                .accountNum(account.accountNum)
+                .userId(account.accountUser.getUserId())
+                .regDate(account.getRegDate())
+                .build();
+    }
 }
