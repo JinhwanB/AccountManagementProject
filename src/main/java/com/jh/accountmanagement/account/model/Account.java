@@ -16,8 +16,8 @@ public class Account extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String userId;
+    @ManyToOne
+    private AccountUser accountUser;
 
     @Column(nullable = false)
     private long accountNum;
