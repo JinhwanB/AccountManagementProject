@@ -22,6 +22,7 @@ public class AccountUser extends BaseTimeEntity {
     private String userId;
 
     @OneToMany(mappedBy = "account_user")
+    @Builder.Default
     List<Account> accountList = new ArrayList<>();
 
     @Column
