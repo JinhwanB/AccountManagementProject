@@ -2,6 +2,7 @@ package com.jh.accountmanagement.account.service;
 
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.account.exception.AccountMaximumException;
+import com.jh.accountmanagement.account.exception.NotFoundAccountNumException;
 import com.jh.accountmanagement.account.exception.NotFoundUserIdException;
 import com.jh.accountmanagement.account.model.Account;
 import com.jh.accountmanagement.account.model.AccountUser;
@@ -24,7 +25,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountUserRepository accountUserRepository;
 
-    public AccountCreate.Response createAccount(AccountCreate.Request request) {
+    public Account createAccount(AccountCreate.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("초기 잔액={}", request.getInitMoney());
 
@@ -55,6 +56,6 @@ public class AccountService {
         accountUserRepository.save(accountUser.toBuilder()
                 .accountList(accountList)
                 .build());
-        return account.toResponse();
+        return accountRepository.findByAccountNumAndDelDate(randomNumber, null).orElseThrow(() -> new NotFoundAccountNumException("해당 계좌번호의 계좌가 없습니다."));
     }
 }
