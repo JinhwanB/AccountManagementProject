@@ -30,11 +30,11 @@ public class Account extends BaseTimeEntity {
     @Column
     private LocalDateTime delDate;
 
-    public AccountCreate.Response toResponse(Account account) {
+    public AccountCreate.Response toResponse() {
         return AccountCreate.Response.builder()
-                .accountNum(account.accountNum)
-                .userId(account.accountUser.getUserId())
-                .regDate(account.getRegDate())
+                .accountNum(this.accountNum)
+                .userId(this.accountUser.getUserId())
+                .regDate(this.getRegDate())
                 .build();
     }
 }
