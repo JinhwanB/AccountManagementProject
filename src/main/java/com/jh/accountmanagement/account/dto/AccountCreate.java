@@ -4,7 +4,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-public class AccountCreateResponse {
+public class AccountCreate {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PROTECTED)
