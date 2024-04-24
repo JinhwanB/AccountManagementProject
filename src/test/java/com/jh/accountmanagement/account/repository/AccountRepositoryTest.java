@@ -3,6 +3,7 @@ package com.jh.accountmanagement.account.repository;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.exception.*;
+import com.jh.accountmanagement.account.type.AccountErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -138,7 +139,7 @@ class AccountRepositoryTest {
         try {
             Account account = accountRepository.findByAccountNum(1234567893).orElseThrow(() -> new NotFoundAccountException("해당 계좌번호와 일치하는 계좌가 없습니다."));
             if (account.getDelDate() != null) {
-                throw new AlreadyDeletedAccountException("이미 해지된 계좌입니다.");
+                throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
             }
         } catch (AlreadyDeletedAccountException e) {
             assertThat(e.getMessage()).isEqualTo("이미 해지된 계좌입니다.");
