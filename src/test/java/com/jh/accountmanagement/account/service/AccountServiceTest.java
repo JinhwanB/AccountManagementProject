@@ -3,6 +3,7 @@ package com.jh.accountmanagement.account.service;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.dto.AccountCreate;
+import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 
 
@@ -65,5 +68,27 @@ class AccountServiceTest {
         assertThat(account.getAccountNum()).isEqualTo(3487659102L);
         assertThat(account.getMoney()).isEqualTo(3000);
         assertThat(account.getAccountUser().getUserId()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("계좌 해지")
+    void accountDelete() {
+        Account modifiedAccount = account.toBuilder()
+                .money(0)
+                .build();
+        AccountDelete.Request request = AccountDelete.Request.builder()
+                .accountNum(3254564960L)
+                .userId("test")
+                .build();
+        Account deletedAccountBuild = account.toBuilder()
+                .delDate(LocalDateTime.now())
+                .build();
+
+        given(accountUserRepository.findByUserIdAndDelDate(any(), any())).willReturn(Optional.of(accountUser));
+        given(accountRepository.findByAccountUserAndAccountNum(any(), anyLong())).willReturn(Optional.of(modifiedAccount));
+        given(accountRepository.save(any())).willReturn(deletedAccountBuild);
+
+        Account deletedAccount = accountService.deleteAccount(request);
+        assertThat(deletedAccount.getDelDate()).isNotNull();
     }
 }
