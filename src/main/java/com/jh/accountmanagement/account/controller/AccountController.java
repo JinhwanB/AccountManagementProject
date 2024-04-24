@@ -1,7 +1,7 @@
 package com.jh.accountmanagement.account.controller;
 
+import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.model.Account;
 import com.jh.accountmanagement.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

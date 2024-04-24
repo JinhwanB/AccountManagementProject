@@ -1,4 +1,4 @@
-package com.jh.accountmanagement.account.model;
+package com.jh.accountmanagement.account.domain;
 
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter // 테스트용
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)

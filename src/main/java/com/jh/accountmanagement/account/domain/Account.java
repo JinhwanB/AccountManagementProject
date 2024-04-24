@@ -1,4 +1,4 @@
-package com.jh.accountmanagement.account.model;
+package com.jh.accountmanagement.account.domain;
 
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.global.BaseTimeEntity;
@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter // 테스트용
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
