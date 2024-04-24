@@ -16,6 +16,7 @@ public class AccountmanagementApplication {
         SpringApplication.run(AccountmanagementApplication.class, args);
     }
 
+    // 레포지토리 테스트 시 주석 필요
     @PostConstruct
     void init() {
         AccountUser test = AccountUser.builder()
