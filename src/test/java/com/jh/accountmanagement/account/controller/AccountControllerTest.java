@@ -3,6 +3,7 @@ package com.jh.accountmanagement.account.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.dto.AccountCheck;
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
@@ -16,11 +17,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,7 +70,7 @@ class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("계좌 해지 컨트롤러 테스트")
+    @DisplayName("계좌 해지 컨트롤러")
     void deleteAccountController() throws Exception {
         AccountUser accountUser = AccountUser.builder()
                 .userId("test")
@@ -93,5 +95,31 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$.userId").value("test"))
                 .andExpect(jsonPath("$.accountNum").value(3287495760L))
                 .andExpect(jsonPath("$.delDate").exists());
+    }
+
+    @Test
+    @DisplayName("계좌 확인 컨트롤러")
+    void checkAccount() throws Exception {
+        AccountUser accountUser = AccountUser.builder()
+                .userId("test")
+                .build();
+        Account account = Account.builder()
+                .accountUser(accountUser)
+                .accountNum(3287495760L)
+                .money(3000)
+                .build();
+        AccountCheck.Request request = AccountCheck.Request.builder()
+                .userId("test")
+                .build();
+        List<Account> list = new ArrayList<>(List.of(account));
+
+        given(accountService.checkAccount(any())).willReturn(list);
+
+        mockMvc.perform(get("/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].accountNum").value(3287495760L))
+                .andExpect(jsonPath("$[0].money").value(3000));
     }
 }
