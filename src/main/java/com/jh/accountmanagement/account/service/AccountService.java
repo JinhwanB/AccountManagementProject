@@ -43,9 +43,10 @@ public class AccountService {
             throw new AccountMaximumException("현재 소유하신 계좌가 10개이므로 더 이상 계좌를 생성할 수 없습니다.");
         }
 
+        // uuid를 통해 랜덤 생성
         UUID uuid = UUID.randomUUID();
         long randomNumber;
-        while (true) {
+        while (true) { // 같은 계좌 번호가 없을 때까지 생성
             randomNumber = Math.abs(uuid.getLeastSignificantBits() % 10000000000L);
             Account account = accountRepository.findByAccountNum(randomNumber).orElse(null);
             if (account == null) {
@@ -60,6 +61,16 @@ public class AccountService {
                 .build());
     }
 
+    /**
+     * 계좌 해지
+     * 사용자가 없는 경우 NotFoundUserIdException
+     * 사용자 아이디와 계좌 소유주가 다른 경우 NotFoundAccountException
+     * 계좌가 이미 해지 상태인 경우 AlreadyDeletedAccountException
+     * 잔액이 있는 경우 DeleteAccountFailException
+     *
+     * @param request 사용자 아이디, 계좌번호
+     * @return 사용자 아이디, 계좌번호, 해지 일시
+     */
     public Account deleteAccount(AccountDelete.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("계좌번호={}", request.getAccountNum());
