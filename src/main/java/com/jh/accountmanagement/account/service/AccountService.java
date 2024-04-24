@@ -8,6 +8,7 @@ import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.exception.*;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
+import com.jh.accountmanagement.account.type.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +38,11 @@ public class AccountService {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("초기 잔액={}", request.getInitMoney());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException("해당 유저를 찾을 수 없습니다."));
+        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(ErrorCode.NOT_FOUNT_USER_ID.toString()));
         List<Account> accountList = accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
 
         if (accountList.size() == 10) {
-            throw new AccountMaximumException("현재 소유하신 계좌가 10개이므로 더 이상 계좌를 생성할 수 없습니다.");
+            throw new AccountMaximumException(ErrorCode.ACCOUNT_MAXIMUM.toString());
         }
 
         // uuid를 통해 랜덤 생성
@@ -76,14 +77,14 @@ public class AccountService {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("계좌번호={}", request.getAccountNum());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException("해당 유저를 찾을 수 없습니다."));
-        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException("해당 아이디의 계좌를 찾을 수 없습니다."));
+        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(ErrorCode.NOT_FOUNT_USER_ID.toString()));
+        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(ErrorCode.NOT_FOUND_ACCOUNT.toString()));
         if (account.getDelDate() != null) {
-            throw new AlreadyDeletedAccountException("이미 해지된 계좌입니다.");
+            throw new AlreadyDeletedAccountException(ErrorCode.ALREADY_DELETED_ACCOUNT.toString());
         }
 
         if (account.getMoney() != 0) {
-            throw new DeleteAccountFailException("해당 계좌에 잔액이 남아있습니다.");
+            throw new DeleteAccountFailException(ErrorCode.DELETE_ACCOUNT_FAIL.toString());
         }
 
         Account deletedAccount = account.toBuilder()
@@ -102,7 +103,7 @@ public class AccountService {
     public List<Account> checkAccount(AccountCheck.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException("해당 유저를 찾을 수 없습니다."));
+        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(ErrorCode.NOT_FOUNT_USER_ID.toString()));
         return accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
     }
 }
