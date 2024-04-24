@@ -19,7 +19,7 @@ public class Account extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_user_id")
+    @JoinColumn(name = "account_user_id", nullable = false)
     private AccountUser accountUser;
 
     @Column(nullable = false)
