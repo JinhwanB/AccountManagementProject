@@ -2,6 +2,7 @@ package com.jh.accountmanagement.account.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.dto.AccountCheck;
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.repository.AccountRepository;
@@ -90,5 +91,21 @@ class AccountServiceTest {
 
         Account deletedAccount = accountService.deleteAccount(request);
         assertThat(deletedAccount.getDelDate()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("계좌 확인")
+    void checkAccount() {
+        AccountCheck.Request request = AccountCheck.Request.builder()
+                .userId("test")
+                .build();
+        List<Account> list = new ArrayList<>(List.of(account));
+
+        given(accountUserRepository.findByUserIdAndDelDate(any(), any())).willReturn(Optional.of(accountUser));
+        given(accountRepository.findAllByAccountUserAndDelDate(any(), any())).willReturn(list);
+
+        List<Account> accounts = accountService.checkAccount(request);
+        assertThat(accounts).hasSize(1);
+        assertThat(accounts.get(0).getAccountNum()).isEqualTo(3487659102L);
     }
 }
