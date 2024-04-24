@@ -35,15 +35,13 @@ class AccountServiceTest {
                 .build();
 
         //when
-        Account account = accountService.createAccount(request);
-
         // then
+        Account account = accountService.createAccount(request);
         assertThat(account.getAccountUser().getUserId()).isEqualTo("test");
         assertThat(account.getAccountUser().getAccountList()).hasSize(1);
         assertThat(account.getAccountUser().getAccountList().get(0).getMoney()).isEqualTo(1000L);
 
         Account account2 = accountService.createAccount(request2);
-
         assertThat(account2.getAccountUser().getUserId()).isEqualTo("test");
         assertThat(account2.getAccountUser().getAccountList()).hasSize(2);
         assertThat(account2.getAccountUser().getAccountList().get(1).getMoney()).isEqualTo(10000L);
