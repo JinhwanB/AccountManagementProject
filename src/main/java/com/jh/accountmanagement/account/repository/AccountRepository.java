@@ -15,5 +15,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     Optional<Account> findByAccountUserAndAccountNum(AccountUser accountUser, long accountNum);
 
+    Optional<Account> findByAccountNum(long accountNum);
+
     List<Account> findAllByAccountUserAndDelDate(AccountUser accountUser, LocalDateTime delDate);
 }
