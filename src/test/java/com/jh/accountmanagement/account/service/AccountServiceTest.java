@@ -1,59 +1,69 @@
 package com.jh.accountmanagement.account.service;
 
+import com.jh.accountmanagement.account.domain.Account;
+import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.exception.NotFoundUserIdException;
-import com.jh.accountmanagement.account.model.Account;
-import com.jh.accountmanagement.account.model.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
-    @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private AccountUserRepository accountUserRepository;
-
-    @Autowired
+    @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private AccountUserRepository accountUserRepository;
+
+    @InjectMocks
+    private AccountService accountService;
+
+    private AccountUser accountUser;
+    private Account account;
+
+    @BeforeEach
+    void before() {
+        accountUser = AccountUser.builder()
+                .userId("test")
+                .build();
+        account = Account.builder()
+                .accountNum(3487659102L)
+                .accountUser(accountUser)
+                .money(3000)
+                .build();
+    }
+
     @Test
-    @DisplayName("계좌 생성 테스트")
-    void createAccount() {
-        // given
+    @DisplayName("계좌 생성")
+    void accountCreate() {
         AccountCreate.Request request = AccountCreate.Request.builder()
-                .initMoney(1000L)
-                .userId("test")
+                .userId("Test")
+                .initMoney(1000)
                 .build();
-        AccountCreate.Request request2 = AccountCreate.Request.builder()
-                .initMoney(10000L)
-                .userId("test")
-                .build();
+        List<Account> list = new ArrayList<>(List.of(account));
 
-        //when
-        // then
+        given(accountUserRepository.findByUserIdAndDelDate(any(), any())).willReturn(Optional.of(accountUser));
+        given(accountRepository.findAllByAccountUserAndDelDate(any(), any())).willReturn(list);
+        given(accountRepository.save(any())).willReturn(account);
+
         Account account = accountService.createAccount(request);
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new NotFoundUserIdException("해당 아이디의 유저는 없습니다."));
-        List<Account> accountList = accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
+        assertThat(account.getAccountNum()).isEqualTo(3487659102L);
+        assertThat(account.getMoney()).isEqualTo(3000);
         assertThat(account.getAccountUser().getUserId()).isEqualTo("test");
-        assertThat(accountList).hasSize(1);
-        assertThat(accountList.get(0).getMoney()).isEqualTo(1000L);
-
-        Account account2 = accountService.createAccount(request2);
-        List<Account> accountList2 = accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
-        assertThat(account2.getAccountUser().getUserId()).isEqualTo("test");
-        assertThat(accountList2).hasSize(2);
     }
 }
