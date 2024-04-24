@@ -92,6 +92,13 @@ public class AccountService {
         return accountRepository.save(deletedAccount);
     }
 
+    /**
+     * 계좌 확인
+     * 사용자가 없는 경우 NotFoundUserIdException
+     *
+     * @param request 사용자 아이디
+     * @return (계좌번호, 잔액) 정보의 list
+     */
     public List<Account> checkAccount(AccountCheck.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
 
