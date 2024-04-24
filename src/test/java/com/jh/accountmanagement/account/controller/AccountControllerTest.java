@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.dto.AccountCreate;
+import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.service.AccountService;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,5 +65,33 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$.accountNum").value(3287495760L))
                 .andExpect(jsonPath("$.regDate").exists());
 
+    }
+
+    @Test
+    @DisplayName("계좌 해지 컨트롤러 테스트")
+    void deleteAccountController() throws Exception {
+        AccountUser accountUser = AccountUser.builder()
+                .userId("test")
+                .build();
+        Account account = Account.builder()
+                .accountUser(accountUser)
+                .accountNum(3287495760L)
+                .money(3000)
+                .delDate(LocalDateTime.now())
+                .build();
+        AccountDelete.Request request = AccountDelete.Request.builder()
+                .userId("test")
+                .accountNum(3287495760L)
+                .build();
+
+        given(accountService.deleteAccount(any())).willReturn(account);
+
+        mockMvc.perform(delete("/accounts/account")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("test"))
+                .andExpect(jsonPath("$.accountNum").value(3287495760L))
+                .andExpect(jsonPath("$.delDate").exists());
     }
 }
