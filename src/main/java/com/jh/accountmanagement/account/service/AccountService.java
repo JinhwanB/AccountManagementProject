@@ -2,6 +2,7 @@ package com.jh.accountmanagement.account.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.dto.AccountCheck;
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.account.dto.AccountDelete;
 import com.jh.accountmanagement.account.exception.*;
@@ -89,5 +90,12 @@ public class AccountService {
                 .delDate(LocalDateTime.now())
                 .build();
         return accountRepository.save(deletedAccount);
+    }
+
+    public List<Account> checkAccount(AccountCheck.Request request) {
+        log.info("사용자 아이디={}", request.getUserId());
+
+        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException("해당 유저를 찾을 수 없습니다."));
+        return accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
     }
 }
