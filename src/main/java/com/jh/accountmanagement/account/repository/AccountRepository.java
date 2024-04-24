@@ -1,7 +1,7 @@
 package com.jh.accountmanagement.account.repository;
 
-import com.jh.accountmanagement.account.model.Account;
-import com.jh.accountmanagement.account.model.AccountUser;
+import com.jh.accountmanagement.account.domain.Account;
+import com.jh.accountmanagement.account.domain.AccountUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    List<Account> findAllByAccountUserAndDelDate(AccountUser accountUser, LocalDateTime delDate);
+    Optional<Account> findByAccountUser(AccountUser accountUser);
 
-    Optional<Account> findByAccountNumAndDelDate(long accountNum, LocalDateTime delDate);
+    Optional<Account> findByAccountUserAndAccountNum(AccountUser accountUser, long accountNum);
+
+    List<Account> findAllByAccountUserAndDelDate(AccountUser accountUser, LocalDateTime delDate);
 }
