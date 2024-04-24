@@ -1,6 +1,6 @@
 package com.jh.accountmanagement.account.repository;
 
-import com.jh.accountmanagement.account.model.AccountUser;
+import com.jh.accountmanagement.account.domain.AccountUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

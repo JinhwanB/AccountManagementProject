@@ -1,6 +1,6 @@
 package com.jh.accountmanagement;
 
-import com.jh.accountmanagement.account.model.AccountUser;
+import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

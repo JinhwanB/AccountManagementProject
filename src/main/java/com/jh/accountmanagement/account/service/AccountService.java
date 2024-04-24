@@ -1,10 +1,10 @@
 package com.jh.accountmanagement.account.service;
 
+import com.jh.accountmanagement.account.domain.Account;
+import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.dto.AccountCreate;
 import com.jh.accountmanagement.account.exception.AccountMaximumException;
 import com.jh.accountmanagement.account.exception.NotFoundUserIdException;
-import com.jh.accountmanagement.account.model.Account;
-import com.jh.accountmanagement.account.model.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import jakarta.transaction.Transactional;
