@@ -52,7 +52,7 @@ public class TransactionService {
             throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
         }
 
-        if (request.getPrice() > account.getMoney()) {
+        if (request.getPrice() > account.getMoney()) { // 거래 금액이 계좌 잔액보다 큰 경우
             throw new TransactionPriceException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
         }
 
@@ -66,13 +66,18 @@ public class TransactionService {
             transactionNumber = UUID.randomUUID().toString();
         }
 
+        Account accountBuild = account.toBuilder()
+                .money(account.getMoney() - request.getPrice())
+                .build();
+        Account modifiedAccount = accountRepository.save(accountBuild);
+
         Transaction transaction = Transaction.builder()
                 .price(request.getPrice())
                 .transactionNumber(transactionNumber)
                 .transactionResult(TransactionResult.S)
                 .transactionType(TransactionType.TRANSACTION)
                 .accountUser(accountUser)
-                .account(account)
+                .account(modifiedAccount)
                 .build();
         return transactionRepository.save(transaction);
     }
