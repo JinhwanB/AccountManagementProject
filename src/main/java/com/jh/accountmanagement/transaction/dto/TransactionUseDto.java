@@ -24,6 +24,10 @@ public class TransactionUseDto {
         @Positive
         @Min(10)
         private long accountNum;
+
+        @NotNull
+        @Positive
+        private long price;
     }
 
     @Getter
