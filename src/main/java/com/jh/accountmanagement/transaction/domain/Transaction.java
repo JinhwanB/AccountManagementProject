@@ -32,6 +32,9 @@ public class Transaction extends BaseTimeEntity {
     private long price;
 
     @Column(nullable = false)
+    private String transactionNumber;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
