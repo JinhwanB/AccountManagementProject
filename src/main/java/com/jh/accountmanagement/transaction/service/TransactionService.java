@@ -56,8 +56,8 @@ public class TransactionService {
             throw new TransactionPriceException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
         }
 
-        String transactionNumber = UUID.randomUUID().toString();
-        while (true) {
+        String transactionNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
+        while (true) { // 중복 체크
             Transaction sameTransactionNumber = transactionRepository.findByTransactionNumber(transactionNumber).orElse(null);
             if (sameTransactionNumber == null) {
                 break;
@@ -66,12 +66,12 @@ public class TransactionService {
             transactionNumber = UUID.randomUUID().toString();
         }
 
-        Account accountBuild = account.toBuilder()
+        Account accountBuild = account.toBuilder() // 계좌의 잔액 수정 후 저장
                 .money(account.getMoney() - request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(accountBuild);
 
-        Transaction transaction = Transaction.builder()
+        Transaction transaction = Transaction.builder() // 거래 저장
                 .price(request.getPrice())
                 .transactionNumber(transactionNumber)
                 .transactionResult(TransactionResult.S)
