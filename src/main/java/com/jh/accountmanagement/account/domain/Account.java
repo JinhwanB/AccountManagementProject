@@ -1,8 +1,8 @@
 package com.jh.accountmanagement.account.domain;
 
-import com.jh.accountmanagement.account.dto.AccountCheck;
-import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.dto.AccountDelete;
+import com.jh.accountmanagement.account.dto.AccountCheckDto;
+import com.jh.accountmanagement.account.dto.AccountCreateDto;
+import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,8 +35,8 @@ public class Account extends BaseTimeEntity {
     private LocalDateTime delDate;
 
     // 계좌 생성시 Response로 변경 메소드
-    public AccountCreate.Response toCreateResponse() {
-        return AccountCreate.Response.builder()
+    public AccountCreateDto.Response toCreateResponse() {
+        return AccountCreateDto.Response.builder()
                 .accountNum(this.accountNum)
                 .userId(this.accountUser.getUserId())
                 .regDate(this.getRegDate())
@@ -44,8 +44,8 @@ public class Account extends BaseTimeEntity {
     }
 
     // 계좌 해지시 Response로 변경 메소드
-    public AccountDelete.Response toDeleteResponse() {
-        return AccountDelete.Response.builder()
+    public AccountDeleteDto.Response toDeleteResponse() {
+        return AccountDeleteDto.Response.builder()
                 .accountNum(this.accountNum)
                 .userId(this.accountUser.getUserId())
                 .delDate(this.getDelDate())
@@ -53,8 +53,8 @@ public class Account extends BaseTimeEntity {
     }
 
     // 계좌 확인시 Response로 변경 메소드
-    public AccountCheck.Response toCheckResponse() {
-        return AccountCheck.Response.builder()
+    public AccountCheckDto.Response toCheckResponse() {
+        return AccountCheckDto.Response.builder()
                 .accountNum(this.accountNum)
                 .money(this.money)
                 .build();

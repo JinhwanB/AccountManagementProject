@@ -8,7 +8,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-public class AccountCreate {
+public class AccountCreateDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PROTECTED)

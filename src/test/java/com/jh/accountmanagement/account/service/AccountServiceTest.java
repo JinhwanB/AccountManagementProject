@@ -2,9 +2,9 @@ package com.jh.accountmanagement.account.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
-import com.jh.accountmanagement.account.dto.AccountCheck;
-import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.dto.AccountDelete;
+import com.jh.accountmanagement.account.dto.AccountCheckDto;
+import com.jh.accountmanagement.account.dto.AccountCreateDto;
+import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("계좌 생성")
     void accountCreate() {
-        AccountCreate.Request request = AccountCreate.Request.builder()
+        AccountCreateDto.Request request = AccountCreateDto.Request.builder()
                 .userId("Test")
                 .initMoney(1000)
                 .build();
@@ -77,7 +77,7 @@ class AccountServiceTest {
         Account modifiedAccount = account.toBuilder()
                 .money(0)
                 .build();
-        AccountDelete.Request request = AccountDelete.Request.builder()
+        AccountDeleteDto.Request request = AccountDeleteDto.Request.builder()
                 .accountNum(3254564960L)
                 .userId("test")
                 .build();
@@ -96,7 +96,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("계좌 확인")
     void checkAccount() {
-        AccountCheck.Request request = AccountCheck.Request.builder()
+        AccountCheckDto.Request request = AccountCheckDto.Request.builder()
                 .userId("test")
                 .build();
         List<Account> list = new ArrayList<>(List.of(account));

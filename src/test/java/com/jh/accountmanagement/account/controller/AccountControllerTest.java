@@ -3,9 +3,9 @@ package com.jh.accountmanagement.account.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
-import com.jh.accountmanagement.account.dto.AccountCheck;
-import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.dto.AccountDelete;
+import com.jh.accountmanagement.account.dto.AccountCheckDto;
+import com.jh.accountmanagement.account.dto.AccountCreateDto;
+import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.service.AccountService;
 import org.junit.jupiter.api.DisplayName;
@@ -52,7 +52,7 @@ class AccountControllerTest {
                 .money(3000)
                 .build();
         account.setRegDate(LocalDateTime.now());
-        AccountCreate.Request request = AccountCreate.Request.builder()
+        AccountCreateDto.Request request = AccountCreateDto.Request.builder()
                 .initMoney(3000)
                 .userId("test")
                 .build();
@@ -81,7 +81,7 @@ class AccountControllerTest {
                 .money(3000)
                 .delDate(LocalDateTime.now())
                 .build();
-        AccountDelete.Request request = AccountDelete.Request.builder()
+        AccountDeleteDto.Request request = AccountDeleteDto.Request.builder()
                 .userId("test")
                 .accountNum(3287495760L)
                 .build();
@@ -108,7 +108,7 @@ class AccountControllerTest {
                 .accountNum(3287495760L)
                 .money(3000)
                 .build();
-        AccountCheck.Request request = AccountCheck.Request.builder()
+        AccountCheckDto.Request request = AccountCheckDto.Request.builder()
                 .userId("test")
                 .build();
         List<Account> list = new ArrayList<>(List.of(account));

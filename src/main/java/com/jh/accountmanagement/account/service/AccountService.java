@@ -2,9 +2,9 @@ package com.jh.accountmanagement.account.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
-import com.jh.accountmanagement.account.dto.AccountCheck;
-import com.jh.accountmanagement.account.dto.AccountCreate;
-import com.jh.accountmanagement.account.dto.AccountDelete;
+import com.jh.accountmanagement.account.dto.AccountCheckDto;
+import com.jh.accountmanagement.account.dto.AccountCreateDto;
+import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.account.exception.*;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
@@ -34,7 +34,7 @@ public class AccountService {
      * @param request 아이디, 초기 잔액
      * @return 사용자 아이디, 생성된 계좌번호, 등록일시
      */
-    public Account createAccount(AccountCreate.Request request) {
+    public Account createAccount(AccountCreateDto.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("초기 잔액={}", request.getInitMoney());
 
@@ -73,7 +73,7 @@ public class AccountService {
      * @param request 사용자 아이디, 계좌번호
      * @return 사용자 아이디, 계좌번호, 해지 일시
      */
-    public Account deleteAccount(AccountDelete.Request request) {
+    public Account deleteAccount(AccountDeleteDto.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("계좌번호={}", request.getAccountNum());
 
@@ -100,7 +100,7 @@ public class AccountService {
      * @param request 사용자 아이디
      * @return (계좌번호, 잔액) 정보의 list
      */
-    public List<Account> checkAccount(AccountCheck.Request request) {
+    public List<Account> checkAccount(AccountCheckDto.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
 
         AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
