@@ -3,6 +3,7 @@ package com.jh.accountmanagement.transaction.domain;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.global.BaseTimeEntity;
+import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
 import jakarta.persistence.*;
@@ -41,4 +42,14 @@ public class Transaction extends BaseTimeEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionResult transactionResult;
+
+    public TransactionUseDto.Response toUseResponse() {
+        return TransactionUseDto.Response.builder()
+                .accountNum(this.getAccount().getAccountNum())
+                .regDate(this.getRegDate())
+                .price(this.price)
+                .transactionNumber(this.transactionNumber)
+                .transactionResult(this.transactionResult.getMessage())
+                .build();
+    }
 }
