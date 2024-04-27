@@ -3,6 +3,7 @@ package com.jh.accountmanagement.transaction.domain;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.global.BaseTimeEntity;
+import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
@@ -50,6 +51,16 @@ public class Transaction extends BaseTimeEntity {
                 .price(this.price)
                 .transactionNumber(this.transactionNumber)
                 .transactionResult(this.transactionResult.getMessage())
+                .build();
+    }
+
+    public TransactionCancelDto.Response toCancelResponse(){
+        return TransactionCancelDto.Response.builder()
+                .accountNum(this.getAccount().getAccountNum())
+                .transactionResult(this.getTransactionResult().getMessage())
+                .transactionNumber(this.getTransactionNumber())
+                .canceledPrice(this.getPrice())
+                .transactionDate(this.getRegDate())
                 .build();
     }
 }
