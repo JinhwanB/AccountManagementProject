@@ -142,6 +142,24 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    // 거래 취소 실패 시 exception 발생했을 때 실패 Transaction 저장
+    public Transaction cancelFail(TransactionCancelDto.Request request){
+        Transaction transaction = transactionRepository.findByTransactionNumber(request.getTransactionNumber()).orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+
+        String randomNum = UUID.randomUUID().toString();
+        String transactionNumber = createTransactionNumber(randomNum);
+
+        Transaction failedTransaction = Transaction.builder()
+                .price(transaction.getPrice())
+                .transactionResult(TransactionResult.F)
+                .transactionType(TransactionType.CANCEL)
+                .accountUser(transaction.getAccountUser())
+                .account(transaction.getAccount())
+                .transactionNumber(transactionNumber)
+                .build();
+        return transactionRepository.save(failedTransaction);
+    }
+
     // 생성한 uuid 중복체크 후 거래번호로 생성
     public String createTransactionNumber(String randomNumber) {
         String transactionNumber = randomNumber;
