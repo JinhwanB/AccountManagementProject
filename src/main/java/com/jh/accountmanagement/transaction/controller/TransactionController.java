@@ -10,10 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TransactionController {
     private final TransactionService transactionService;
 
-    @PostMapping("/transaction/use")
+    @PostMapping("/transaction")
     public ResponseEntity<TransactionUseDto.Response> useMoney(@Valid @RequestBody TransactionUseDto.Request request) {
         Transaction transaction;
         try {
@@ -34,12 +31,12 @@ public class TransactionController {
         return ResponseEntity.ok(transaction.toUseResponse());
     }
 
-    @PostMapping("/transaction/cancel")
-    public ResponseEntity<TransactionCancelDto.Response> cancelMoney(@Valid @RequestBody TransactionCancelDto.Request request){
+    @DeleteMapping("/transaction")
+    public ResponseEntity<TransactionCancelDto.Response> cancelMoney(@Valid @RequestBody TransactionCancelDto.Request request) {
         Transaction transaction;
-        try{
+        try {
             transaction = transactionService.canceledTransaction(request);
-        }catch (TransactionPriceException | NotFoundTransactionException e){
+        } catch (TransactionPriceException | NotFoundTransactionException e) {
             log.error(e.getMessage());
             transaction = transactionService.cancelFail(request);
         }
