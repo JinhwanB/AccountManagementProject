@@ -7,7 +7,6 @@ import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/accounts")
 public class AccountController {
     private final AccountService accountService;
