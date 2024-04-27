@@ -2,6 +2,7 @@ package com.jh.accountmanagement.transaction.controller;
 
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
+import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
 import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
@@ -41,5 +42,11 @@ public class TransactionController {
             transaction = transactionService.cancelFail(request);
         }
         return ResponseEntity.ok(transaction.toCancelResponse());
+    }
+
+    @GetMapping("/transaction")
+    public ResponseEntity<TransactionCheckDto.Response> check(@Valid @RequestBody TransactionCheckDto.Request request) {
+        Transaction transaction = transactionService.checkTransaction(request);
+        return ResponseEntity.ok(transaction.toCheckResponse());
     }
 }
