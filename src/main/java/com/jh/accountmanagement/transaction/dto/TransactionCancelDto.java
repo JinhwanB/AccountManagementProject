@@ -15,7 +15,7 @@ public class TransactionCancelDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @Builder(toBuilder = true)
     @ToString
-    static class Request {
+    public static class Request {
         @NotNull
         @NotBlank
         private String transactionNumber;
@@ -36,7 +36,7 @@ public class TransactionCancelDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @Builder(toBuilder = true)
     @ToString
-    static class Response {
+    public static class Response {
         private long accountNum;
         private String transactionResult;
         private String transactionNumber;
