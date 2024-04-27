@@ -1,6 +1,5 @@
 package com.jh.accountmanagement.transaction.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
@@ -142,8 +141,8 @@ class TransactionControllerTest {
         given(transactionService.canceledTransaction(any())).willReturn(transaction);
 
         mockMvc.perform(post("/transactions/transaction/cancel")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNum").value(12345))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
