@@ -56,15 +56,8 @@ public class TransactionService {
             throw new TransactionPriceException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
         }
 
-        String transactionNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
-        while (true) { // 중복 체크
-            Transaction sameTransactionNumber = transactionRepository.findByTransactionNumber(transactionNumber).orElse(null);
-            if (sameTransactionNumber == null) {
-                break;
-            }
-
-            transactionNumber = UUID.randomUUID().toString();
-        }
+        String randomNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
+        String transactionNumber = createTransactionNumber(randomNumber);
 
         Account accountBuild = account.toBuilder() // 계좌의 잔액 수정 후 저장
                 .money(account.getMoney() - request.getPrice())
@@ -80,5 +73,47 @@ public class TransactionService {
                 .account(modifiedAccount)
                 .build();
         return transactionRepository.save(transaction);
+    }
+
+//    public Transaction canceledTransaction(TransactionCancelDto.Request request) {
+//        log.info("거래 번호={}", request.getTransactionNumber());
+//        log.info("계좌번호={}", request.getAccountNum());
+//        log.info("거래금액={}", request.getPrice());
+//    }
+
+    // 거래 시 Exception 발생했을 때 실패 Transaction 저장
+    public Transaction useFail(TransactionUseDto.Request request) {
+        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
+        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        if (account.getDelDate() != null) {
+            throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
+        }
+
+        String randomNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
+        String transactionNumber = createTransactionNumber(randomNumber);
+
+        Transaction transaction = Transaction.builder() // 거래 저장
+                .price(request.getPrice())
+                .transactionNumber(transactionNumber)
+                .transactionResult(TransactionResult.F)
+                .transactionType(TransactionType.TRANSACTION)
+                .accountUser(accountUser)
+                .account(account)
+                .build();
+        return transactionRepository.save(transaction);
+    }
+
+    // 생성한 uuid 중복체크 후 거래번호로 생성
+    public String createTransactionNumber(String randomNumber) {
+        String transactionNumber = randomNumber;
+        while (true) { // 중복 체크
+            Transaction sameTransactionNumber = transactionRepository.findByTransactionNumber(transactionNumber).orElse(null);
+            if (sameTransactionNumber == null) {
+                break;
+            }
+
+            transactionNumber = UUID.randomUUID().toString();
+        }
+        return transactionNumber;
     }
 }
