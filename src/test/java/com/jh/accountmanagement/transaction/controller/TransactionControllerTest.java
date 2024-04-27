@@ -6,6 +6,7 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
+import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
 import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
@@ -25,8 +26,7 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -214,6 +214,36 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.canceledPrice").value(1000))
+                .andExpect(jsonPath("$.transactionDate").exists());
+    }
+
+    @Test
+    @DisplayName("거래 확인 컨트롤러")
+    void check() throws Exception {
+        Transaction transaction = Transaction.builder()
+                .transactionType(TransactionType.TRANSACTION)
+                .transactionResult(TransactionResult.F)
+                .account(account)
+                .accountUser(accountUser)
+                .price(1000)
+                .transactionNumber("12345")
+                .build();
+        transaction.setRegDate(LocalDateTime.now());
+        TransactionCheckDto.Request request = TransactionCheckDto.Request.builder()
+                .transactionNumber("12345")
+                .build();
+
+        given(transactionService.checkTransaction(any())).willReturn(transaction);
+
+        mockMvc.perform(get("/transactions/transaction")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.transactionType").value(TransactionType.TRANSACTION.getMessage()))
+                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
+                .andExpect(jsonPath("$.transactionNumber").value("12345"))
+                .andExpect(jsonPath("$.transactionPrice").value(1000))
                 .andExpect(jsonPath("$.transactionDate").exists());
     }
 }
