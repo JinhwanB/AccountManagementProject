@@ -6,6 +6,7 @@ import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
+import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.repository.TransactionRepository;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
@@ -91,7 +92,7 @@ class TransactionServiceTest {
 
     @Test
     @DisplayName("거래 취소 서비스")
-    void cancelTransaction(){
+    void cancelTransaction() {
         TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
                 .transactionNumber("345678")
                 .price(1000)
@@ -125,5 +126,28 @@ class TransactionServiceTest {
         Transaction result = transactionService.canceledTransaction(request);
         assertThat(result.getTransactionNumber()).isEqualTo("3456");
         assertThat(result.getTransactionType()).isEqualTo(TransactionType.CANCEL);
+    }
+
+    @Test
+    @DisplayName("거래 확인 서비스")
+    void check() {
+        Transaction transaction = Transaction.builder()
+                .transactionNumber("34562")
+                .transactionResult(TransactionResult.F)
+                .price(2000)
+                .accountUser(accountUser)
+                .account(account)
+                .transactionType(TransactionType.CANCEL)
+                .build();
+        TransactionCheckDto.Request request = TransactionCheckDto.Request.builder()
+                .transactionNumber("34562")
+                .build();
+
+        given(transactionRepository.findByTransactionNumber(any())).willReturn(Optional.of(transaction));
+
+        Transaction result = transactionService.checkTransaction(request);
+
+        assertThat(result.getTransactionResult()).isEqualTo(TransactionResult.F);
+        assertThat(result.getTransactionNumber()).isEqualTo("34562");
     }
 }
