@@ -6,6 +6,7 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
+import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
@@ -81,6 +82,38 @@ class TransactionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNum").value(12345))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
+                .andExpect(jsonPath("$.transactionNumber").value("12345"))
+                .andExpect(jsonPath("$.price").value(1000))
+                .andExpect(jsonPath("$.regDate").exists());
+    }
+
+    @Test
+    @DisplayName("잔액 사용 컨트롤러 실패")
+    void useMoneyFail() throws Exception {
+        Transaction transaction = Transaction.builder()
+                .transactionType(TransactionType.TRANSACTION)
+                .transactionResult(TransactionResult.F)
+                .transactionNumber("12345")
+                .accountUser(accountUser)
+                .price(1000)
+                .account(account)
+                .build();
+        transaction.setRegDate(LocalDateTime.now());
+        TransactionUseDto.Request request = TransactionUseDto.Request.builder()
+                .userId("test")
+                .price(1000)
+                .accountNum(12345)
+                .build();
+
+        given(transactionService.transactionUse(any())).willThrow(TransactionPriceException.class);
+        given(transactionService.useFail(any())).willReturn(transaction);
+
+        mockMvc.perform(post("/transactions/transaction")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.price").value(1000))
                 .andExpect(jsonPath("$.regDate").exists());
