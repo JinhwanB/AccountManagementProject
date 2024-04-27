@@ -7,6 +7,7 @@ import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
+import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
 import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,7 +79,7 @@ class TransactionControllerTest {
 
         given(transactionService.transactionUse(any())).willReturn(transaction);
 
-        mockMvc.perform(post("/transactions/transaction/use")
+        mockMvc.perform(post("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -140,12 +142,76 @@ class TransactionControllerTest {
 
         given(transactionService.canceledTransaction(any())).willReturn(transaction);
 
-        mockMvc.perform(post("/transactions/transaction/cancel")
+        mockMvc.perform(delete("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNum").value(12345))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
+                .andExpect(jsonPath("$.transactionNumber").value("12345"))
+                .andExpect(jsonPath("$.canceledPrice").value(1000))
+                .andExpect(jsonPath("$.transactionDate").exists());
+    }
+
+    @Test
+    @DisplayName("잔액 사용 취소 실패 - 계좌번호 다름")
+    void cancelMoneyFail() throws Exception {
+        Transaction transaction = Transaction.builder()
+                .transactionNumber("12345")
+                .transactionResult(TransactionResult.F)
+                .transactionType(TransactionType.CANCEL)
+                .account(account)
+                .price(1000)
+                .accountUser(accountUser)
+                .build();
+        transaction.setRegDate(LocalDateTime.now());
+        TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
+                .accountNum(34566)
+                .transactionNumber("12345")
+                .price(1000)
+                .build();
+
+        given(transactionService.canceledTransaction(any())).willThrow(NotFoundTransactionException.class);
+        given(transactionService.cancelFail(any())).willReturn(transaction);
+
+        mockMvc.perform(delete("/transactions/transaction")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
+                .andExpect(jsonPath("$.transactionNumber").value("12345"))
+                .andExpect(jsonPath("$.canceledPrice").value(1000))
+                .andExpect(jsonPath("$.transactionDate").exists());
+    }
+
+    @Test
+    @DisplayName("잔액 취소 컨틀롤러 실패 - 가격 다름")
+    void cancelMoneyFailPrice() throws Exception {
+        Transaction transaction = Transaction.builder()
+                .transactionNumber("12345")
+                .transactionResult(TransactionResult.F)
+                .transactionType(TransactionType.CANCEL)
+                .account(account)
+                .price(1000)
+                .accountUser(accountUser)
+                .build();
+        transaction.setRegDate(LocalDateTime.now());
+        TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
+                .accountNum(12345)
+                .transactionNumber("12345")
+                .price(3000)
+                .build();
+
+        given(transactionService.canceledTransaction(any())).willThrow(TransactionPriceException.class);
+        given(transactionService.cancelFail(any())).willReturn(transaction);
+
+        mockMvc.perform(delete("/transactions/transaction")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.canceledPrice").value(1000))
                 .andExpect(jsonPath("$.transactionDate").exists());
