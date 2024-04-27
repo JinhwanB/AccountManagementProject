@@ -9,7 +9,10 @@ import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
 import com.jh.accountmanagement.transaction.domain.Transaction;
+import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
+import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
+import com.jh.accountmanagement.transaction.exception.NotFoundTransactionNumberException;
 import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
 import com.jh.accountmanagement.transaction.repository.TransactionRepository;
 import com.jh.accountmanagement.transaction.type.TransactionErrorCode;
@@ -39,7 +42,7 @@ public class TransactionService {
      * 거래금액이 계좌 잔액보다 큰 경우 TransactionPriceException
      *
      * @param request 사용자 아이디, 계좌번호, 거래금액
-     * @return 계좌번호, 거래 결과, 거래넘버, 거래금액, 거래일시
+     * @return Transaction
      */
     public Transaction transactionUse(TransactionUseDto.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
@@ -75,11 +78,47 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-//    public Transaction canceledTransaction(TransactionCancelDto.Request request) {
-//        log.info("거래 번호={}", request.getTransactionNumber());
-//        log.info("계좌번호={}", request.getAccountNum());
-//        log.info("거래금액={}", request.getPrice());
-//    }
+    /**
+     * 거래 취소
+     * 원거래 금액과 취소 금액이 다른 경우 exception
+     * 취소하려는 거래의 계좌번호와 일치하지 않는 경우 exception
+     * @param request 거래 번호, 계좌 번호, 거래 금액
+     * @return Transaction
+     */
+    public Transaction canceledTransaction(TransactionCancelDto.Request request) {
+        log.info("거래 번호={}", request.getTransactionNumber());
+        log.info("계좌번호={}", request.getAccountNum());
+        log.info("거래금액={}", request.getPrice());
+
+        Transaction transaction = transactionRepository.findByTransactionNumber(request.getTransactionNumber()).orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        Account account = accountRepository.findByAccountNum(request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+
+        if(transaction.getPrice() != request.getPrice()){
+            throw new TransactionPriceException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
+        }
+
+        if(transaction.getAccount().getAccountNum() != request.getAccountNum()){
+            throw new NotFoundTransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
+        }
+
+        Account modifiedAccountBuild = account.toBuilder()
+                .money(account.getMoney() + request.getPrice())
+                .build();
+        Account modifiedAccount = accountRepository.save(modifiedAccountBuild);
+
+        String randomNum = UUID.randomUUID().toString();
+        String transactionNumber = createTransactionNumber(randomNum);
+
+        Transaction canceledTransaction = Transaction.builder()
+                .transactionNumber(transactionNumber)
+                .transactionResult(TransactionResult.S)
+                .transactionType(TransactionType.CANCEL)
+                .account(modifiedAccount)
+                .accountUser(modifiedAccount.getAccountUser())
+                .price(request.getPrice())
+                .build();
+        return transactionRepository.save(canceledTransaction);
+    }
 
     // 거래 시 Exception 발생했을 때 실패 Transaction 저장
     public Transaction useFail(TransactionUseDto.Request request) {
