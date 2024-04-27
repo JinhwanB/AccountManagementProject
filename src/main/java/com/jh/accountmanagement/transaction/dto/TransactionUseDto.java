@@ -22,11 +22,11 @@ public class TransactionUseDto {
 
         @NotNull
         @Positive
-        @Min(10)
         private long accountNum;
 
         @NotNull
         @Positive
+        @Min(100)
         private long price;
     }
 
