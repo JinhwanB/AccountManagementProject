@@ -1,10 +1,12 @@
 package com.jh.accountmanagement.transaction.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
+import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
@@ -117,5 +119,36 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.price").value(1000))
                 .andExpect(jsonPath("$.regDate").exists());
+    }
+
+    @Test
+    @DisplayName("잔액 취소 컨트롤러")
+    void cancelMoney() throws Exception {
+        Transaction transaction = Transaction.builder()
+                .transactionNumber("12345")
+                .transactionResult(TransactionResult.S)
+                .transactionType(TransactionType.CANCEL)
+                .account(account)
+                .price(1000)
+                .accountUser(accountUser)
+                .build();
+        transaction.setRegDate(LocalDateTime.now());
+        TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
+                .accountNum(12345)
+                .transactionNumber("12345")
+                .price(1000)
+                .build();
+
+        given(transactionService.canceledTransaction(any())).willReturn(transaction);
+
+        mockMvc.perform(post("/transactions/transaction/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
+                .andExpect(jsonPath("$.transactionNumber").value("12345"))
+                .andExpect(jsonPath("$.canceledPrice").value(1000))
+                .andExpect(jsonPath("$.transactionDate").exists());
     }
 }
