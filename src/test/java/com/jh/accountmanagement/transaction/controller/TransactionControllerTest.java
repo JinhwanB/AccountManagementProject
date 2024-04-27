@@ -76,7 +76,7 @@ class TransactionControllerTest {
 
         given(transactionService.transactionUse(any())).willReturn(transaction);
 
-        mockMvc.perform(post("/transactions/transaction")
+        mockMvc.perform(post("/transactions/transaction/use")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
