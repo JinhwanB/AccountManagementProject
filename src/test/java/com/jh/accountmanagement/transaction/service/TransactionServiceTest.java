@@ -5,6 +5,7 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
+import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.repository.TransactionRepository;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
@@ -48,7 +49,7 @@ class TransactionServiceTest {
                 .userId("test")
                 .build();
         account = Account.builder()
-                .accountNum(3487659102L)
+                .accountNum(12345)
                 .accountUser(accountUser)
                 .money(3000)
                 .build();
@@ -86,5 +87,43 @@ class TransactionServiceTest {
 
         assertThat(transaction.getPrice()).isEqualTo(1000);
         assertThat(transaction.getTransactionNumber()).isEqualTo("32545");
+    }
+
+    @Test
+    @DisplayName("거래 취소 서비스")
+    void cancelTransaction(){
+        TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
+                .transactionNumber("345678")
+                .price(1000)
+                .accountNum(12345)
+                .build();
+        Transaction transaction = Transaction.builder()
+                .transactionNumber("345678")
+                .transactionResult(TransactionResult.S)
+                .transactionType(TransactionType.TRANSACTION)
+                .price(1000)
+                .accountUser(accountUser)
+                .account(account)
+                .build();
+        Account modifiedAccount = account.toBuilder()
+                .money(account.getMoney() + 1000)
+                .build();
+        Transaction canceledTransaction = Transaction.builder()
+                .transactionNumber("3456")
+                .transactionResult(TransactionResult.S)
+                .transactionType(TransactionType.CANCEL)
+                .account(modifiedAccount)
+                .accountUser(accountUser)
+                .price(1000)
+                .build();
+
+        given(transactionRepository.findByTransactionNumber("345678")).willReturn(Optional.of(transaction));
+        given(accountRepository.findByAccountNum(anyLong())).willReturn(Optional.of(account));
+        given(accountRepository.save(any())).willReturn(modifiedAccount);
+        given(transactionRepository.save(any())).willReturn(canceledTransaction);
+
+        Transaction result = transactionService.canceledTransaction(request);
+        assertThat(result.getTransactionNumber()).isEqualTo("3456");
+        assertThat(result.getTransactionType()).isEqualTo(TransactionType.CANCEL);
     }
 }
