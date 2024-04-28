@@ -3,7 +3,6 @@ package com.jh.accountmanagement.transaction.controller;
 import com.jh.accountmanagement.config.RedisUtils;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
-import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionRedisDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.TransactionException;
@@ -49,14 +48,19 @@ public class TransactionController {
     }
 
     @GetMapping("/transaction")
-    public ResponseEntity<TransactionCheckDto.Response> check(@Valid @RequestParam @NotBlank @NotNull String transactionNumber) {
+    public ResponseEntity<Object> check(@Valid @RequestParam @NotBlank @NotNull String transactionNumber) {
         if (redisUtils.hasKeyOfTransaction(transactionNumber)) {
             TransactionRedisDto transaction = redisUtils.getTransaction(transactionNumber);
             return ResponseEntity.ok(transaction.toCheckResponse());
         }
 
-        Transaction transaction = transactionService.getTransaction(transactionNumber);
-        redisUtils.setTransaction(transactionNumber, transaction.toRedisDto());
-        return ResponseEntity.ok(transaction.toCheckResponse());
+        try {
+            Transaction transaction = transactionService.getTransaction(transactionNumber);
+            redisUtils.setTransaction(transactionNumber, transaction.toRedisDto());
+            return ResponseEntity.ok(transaction.toCheckResponse());
+        } catch (TransactionException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 }
