@@ -19,7 +19,6 @@ public class AccountUserService {
     public AccountUser getUser(String userId) {
         log.info("사용자 아이디={}", userId);
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(userId, null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
-        return accountUser;
+        return accountUserRepository.findByUserIdAndDelDate(userId, null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
     }
 }
