@@ -1,8 +1,6 @@
 package com.jh.accountmanagement;
 
-import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,14 +12,5 @@ public class AccountmanagementApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AccountmanagementApplication.class, args);
-    }
-
-    // 레포지토리 테스트 시 주석 필요
-    @PostConstruct
-    void init() {
-        AccountUser test = AccountUser.builder()
-                .userId("test")
-                .build();
-        accountUserRepository.save(test);
     }
 }
