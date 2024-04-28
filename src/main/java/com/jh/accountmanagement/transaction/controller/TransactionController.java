@@ -1,8 +1,10 @@
 package com.jh.accountmanagement.transaction.controller;
 
+import com.jh.accountmanagement.config.RedisUtils;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
+import com.jh.accountmanagement.transaction.dto.TransactionRedisDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class TransactionController {
     private final TransactionService transactionService;
+    private final RedisUtils redisUtils;
 
     @PostMapping("/transaction")
     public ResponseEntity<TransactionUseDto.Response> useMoney(@Valid @RequestBody TransactionUseDto.Request request) {
@@ -29,7 +32,7 @@ public class TransactionController {
         } catch (TransactionException e) {
             log.error(e.getMessage());
             transactionService.useFail(request);
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
@@ -47,7 +50,13 @@ public class TransactionController {
 
     @GetMapping("/transaction")
     public ResponseEntity<TransactionCheckDto.Response> check(@Valid @RequestParam @NotBlank @NotNull String transactionNumber) {
+        if (redisUtils.hasKeyOfTransaction(transactionNumber)) {
+            TransactionRedisDto transaction = redisUtils.getTransaction(transactionNumber);
+            return ResponseEntity.ok(transaction.toCheckResponse());
+        }
+
         Transaction transaction = transactionService.getTransaction(transactionNumber);
+        redisUtils.setTransaction(transactionNumber, transaction.toRedisDto());
         return ResponseEntity.ok(transaction.toCheckResponse());
     }
 }
