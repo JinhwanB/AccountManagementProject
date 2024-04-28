@@ -8,6 +8,7 @@ import com.jh.accountmanagement.account.dto.AccountCreateDto;
 import com.jh.accountmanagement.account.dto.AccountDeleteDto;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.service.AccountService;
+import com.jh.accountmanagement.config.RedisUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ class AccountControllerTest {
 
     @MockBean
     private AccountUserRepository accountUserRepository;
+
+    @MockBean
+    private RedisUtils redisUtils;
 
     @Autowired
     private MockMvc mockMvc;
