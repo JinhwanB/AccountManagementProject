@@ -5,10 +5,10 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.dto.AccountCheckDto;
 import com.jh.accountmanagement.account.dto.AccountCreateDto;
 import com.jh.accountmanagement.account.dto.AccountDeleteDto;
-import com.jh.accountmanagement.account.exception.*;
+import com.jh.accountmanagement.account.exception.AccountException;
 import com.jh.accountmanagement.account.repository.AccountRepository;
-import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
+import com.jh.accountmanagement.config.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,8 @@ import java.util.UUID;
 @Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
-    private final AccountUserRepository accountUserRepository;
+    private final AccountUserService accountUserService;
+    private final RedisUtils redisUtils;
 
     /**
      * 계좌 생성
@@ -38,19 +39,25 @@ public class AccountService {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("초기 잔액={}", request.getInitMoney());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
+        AccountUser accountUser = accountUserService.getUser(request.getUserId());
         List<Account> accountList = accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
 
         if (accountList.size() == 10) {
-            throw new AccountMaximumException(AccountErrorCode.ACCOUNT_MAXIMUM.getMessage());
+            throw new AccountException(AccountErrorCode.ACCOUNT_MAXIMUM.getMessage());
         }
 
         // uuid를 통해 랜덤 생성
         UUID uuid = UUID.randomUUID();
-        long randomNumber;
+        String randomNumber;
         while (true) { // 같은 계좌 번호가 없을 때까지 생성
-            randomNumber = Math.abs(uuid.getLeastSignificantBits() % 10000000000L);
-            Account account = accountRepository.findByAccountNum(randomNumber).orElse(null);
+            randomNumber = String.valueOf(Math.abs(uuid.getLeastSignificantBits() % 10000000000L));
+            Account account;
+            try {
+                account = getAccount(randomNumber);
+            } catch (AccountException e) {
+                account = null;
+            }
+
             if (account == null) {
                 break;
             }
@@ -77,19 +84,26 @@ public class AccountService {
         log.info("사용자 아이디={}", request.getUserId());
         log.info("계좌번호={}", request.getAccountNum());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
-        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        AccountUser accountUser = accountUserService.getUser(request.getUserId());
+        Account account = getAccount(request.getAccountNum());
+        if (!account.getAccountUser().equals(accountUser)) {
+            throw new AccountException(AccountErrorCode.DIFF_USER_AND_ACCOUNT_NUMBER.getMessage());
+        }
+
         if (account.getDelDate() != null) {
-            throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
+            throw new AccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
         }
 
         if (account.getMoney() != 0) {
-            throw new DeleteAccountFailException(AccountErrorCode.DELETE_ACCOUNT_FAIL.getMessage());
+            throw new AccountException(AccountErrorCode.DELETE_ACCOUNT_FAIL.getMessage());
         }
 
         Account deletedAccount = account.toBuilder()
                 .delDate(LocalDateTime.now())
                 .build();
+        if (redisUtils.hasKey(deletedAccount.getAccountNum())) {
+            redisUtils.delete(deletedAccount.getAccountNum());
+        }
         return accountRepository.save(deletedAccount);
     }
 
@@ -103,7 +117,22 @@ public class AccountService {
     public List<Account> checkAccount(AccountCheckDto.Request request) {
         log.info("사용자 아이디={}", request.getUserId());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
+        AccountUser accountUser = accountUserService.getUser(request.getUserId());
         return accountRepository.findAllByAccountUserAndDelDate(accountUser, null);
+    }
+
+    public Account getAccount(String accountNum) {
+        log.info("계좌 번호={}", accountNum);
+
+        if (redisUtils.hasKey(accountNum)) {
+            return (Account) redisUtils.get(accountNum);
+        }
+
+        Account account = accountRepository.findByAccountNum(accountNum).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        if (account.getDelDate() != null) {
+            throw new AccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
+        }
+        redisUtils.set(accountNum, account);
+        return account;
     }
 }
