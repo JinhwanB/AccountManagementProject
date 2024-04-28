@@ -63,6 +63,8 @@ public class AccountService {
             }
         }
 
+        redisUtils.deleteAccount(request.getUserId());
+
         return accountRepository.save(Account.builder()
                 .accountNum(randomNumber)
                 .accountUser(accountUser)
@@ -101,7 +103,7 @@ public class AccountService {
         Account deletedAccount = account.toBuilder()
                 .delDate(LocalDateTime.now())
                 .build();
-        redisUtils.delete(deletedAccount.getAccountNum());
+        redisUtils.deleteAccount(request.getUserId());
         return accountRepository.save(deletedAccount);
     }
 
@@ -122,15 +124,10 @@ public class AccountService {
     public Account getAccount(String accountNum) {
         log.info("계좌 번호={}", accountNum);
 
-        if (redisUtils.hasKey(accountNum)) {
-            return (Account) redisUtils.get(accountNum);
-        }
-
         Account account = accountRepository.findByAccountNum(accountNum).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
         if (account.getDelDate() != null) {
             throw new AccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
         }
-        redisUtils.set(accountNum, account);
         return account;
     }
 }
