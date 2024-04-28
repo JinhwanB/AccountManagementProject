@@ -2,7 +2,6 @@ package com.jh.accountmanagement.account.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,8 +19,8 @@ public class AccountDeleteDto {
         private String userId;
 
         @NotNull
-        @Positive
-        private long accountNum;
+        @NotBlank
+        private String accountNum;
     }
 
     @Getter
@@ -32,7 +31,7 @@ public class AccountDeleteDto {
     @ToString
     public static class Response {
         private String userId;
-        private long accountNum;
+        private String accountNum;
         private LocalDateTime delDate;
     }
 }

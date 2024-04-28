@@ -11,11 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    Optional<Account> findByAccountUser(AccountUser accountUser);
+    Optional<Account> findByAccountUserAndAccountNum(AccountUser accountUser, String accountNum);
 
-    Optional<Account> findByAccountUserAndAccountNum(AccountUser accountUser, long accountNum);
-
-    Optional<Account> findByAccountNum(long accountNum);
+    Optional<Account> findByAccountNum(String accountNum);
 
     List<Account> findAllByAccountUserAndDelDate(AccountUser accountUser, LocalDateTime delDate);
 }

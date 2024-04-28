@@ -24,7 +24,7 @@ public class AccountCheckDto {
     @Builder(toBuilder = true)
     @ToString
     public static class Response {
-        private long accountNum;
+        private String accountNum;
         private long money;
     }
 }

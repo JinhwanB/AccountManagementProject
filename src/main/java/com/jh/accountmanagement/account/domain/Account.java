@@ -30,7 +30,7 @@ public class Account extends BaseTimeEntity {
     private AccountUser accountUser;
 
     @Column(nullable = false)
-    private long accountNum;
+    private String accountNum;
 
     @Column(nullable = false)
     private long money;

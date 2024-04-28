@@ -32,7 +32,7 @@ public class AccountCreateDto {
     @ToString
     public static class Response {
         private String userId;
-        private long accountNum;
+        private String accountNum;
         private LocalDateTime regDate;
     }
 }
