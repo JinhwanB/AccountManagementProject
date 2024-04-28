@@ -25,6 +25,9 @@ spring:
       port: 6379
       database: 0
 
+  cache:
+    type: redis
+
 decorator:
   datasource:
     p6spy:
