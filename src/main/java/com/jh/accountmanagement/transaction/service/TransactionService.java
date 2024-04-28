@@ -66,7 +66,7 @@ public class TransactionService {
                 .money(account.getMoney() - request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(accountBuild);
-        redisUtils.update(modifiedAccount.getAccountNum(), modifiedAccount);
+        redisUtils.deleteAccount(modifiedAccount.getAccountNum());
 
         Transaction transaction = Transaction.builder() // 거래 저장
                 .price(request.getPrice())
@@ -107,7 +107,7 @@ public class TransactionService {
                 .money(account.getMoney() + request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(modifiedAccountBuild);
-        redisUtils.update(modifiedAccount.getAccountNum(), modifiedAccount);
+        redisUtils.deleteAccount(modifiedAccount.getAccountNum());
 
         String randomNum = UUID.randomUUID().toString();
         String transactionNumber = createTransactionNumber(randomNum);
@@ -127,12 +127,7 @@ public class TransactionService {
     public Transaction getTransaction(String transactionNumber) {
         log.info("거래번호={}", transactionNumber);
 
-        if (redisUtils.hasKey(transactionNumber)) {
-            return (Transaction) redisUtils.get(transactionNumber);
-        }
-
         Transaction transaction = transactionRepository.findByTransactionNumber(transactionNumber).orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
-        redisUtils.set(transactionNumber, transaction);
         return transaction;
     }
 
