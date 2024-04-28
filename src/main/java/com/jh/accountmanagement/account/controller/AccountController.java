@@ -44,6 +44,9 @@ public class AccountController {
         }
 
         List<Account> accounts = accountService.checkAccount(request);
+        for (Account account : accounts) {
+            redisUtils.setAccount(request.getUserId(), account.toRedisDto());
+        }
         return ResponseEntity.ok(accounts.stream().map(Account::toCheckResponse).toList());
     }
 }
