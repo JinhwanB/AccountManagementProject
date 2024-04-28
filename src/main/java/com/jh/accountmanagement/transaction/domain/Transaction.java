@@ -86,6 +86,7 @@ public class Transaction extends BaseTimeEntity {
                 .transactionType(transactionType.getMessage())
                 .accountMoney(account.getMoney())
                 .accountUserId(accountUser.getUserId())
+                .transactionDate(this.getRegDate())
                 .build();
     }
 }
