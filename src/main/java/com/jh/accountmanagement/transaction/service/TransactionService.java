@@ -176,7 +176,7 @@ public class TransactionService {
     }
 
     // 생성한 uuid 중복체크 후 거래번호로 생성
-    public String createTransactionNumber(String randomNumber) {
+    private String createTransactionNumber(String randomNumber) {
         String transactionNumber = randomNumber;
         while (true) { // 중복 체크
             Transaction sameTransactionNumber = transactionRepository.findByTransactionNumber(transactionNumber).orElse(null);
