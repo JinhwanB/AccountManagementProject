@@ -6,8 +6,7 @@ import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
 import com.jh.accountmanagement.transaction.domain.Transaction;
-import com.jh.accountmanagement.transaction.exception.NotFoundTransactionNumberException;
-import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
+import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.type.TransactionErrorCode;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
@@ -229,7 +228,7 @@ class TransactionRepositoryTest {
         Transaction save;
         try {
             if (price > account.getMoney()) {
-                throw new TransactionPriceException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
+                throw new TransactionException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
             }
 
             Transaction transactionBuild = Transaction.builder()
@@ -243,7 +242,7 @@ class TransactionRepositoryTest {
             transactionBuild.setRegDate(LocalDateTime.now());
             transactionBuild.setChgDate(LocalDateTime.now());
             save = transactionRepository.save(transactionBuild);
-        } catch (TransactionPriceException e) {
+        } catch (TransactionException e) {
             Transaction transactionBuild = Transaction.builder()
                     .account(account)
                     .price(10000)
@@ -281,7 +280,7 @@ class TransactionRepositoryTest {
         Transaction canceledTransaction;
         try {
             if (originPrice != transaction.getPrice()) {
-                throw new TransactionPriceException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
+                throw new TransactionException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
             }
 
             Transaction canceledTransactionBuild = Transaction.builder()
@@ -295,7 +294,7 @@ class TransactionRepositoryTest {
             canceledTransactionBuild.setRegDate(LocalDateTime.now());
             canceledTransactionBuild.setChgDate(LocalDateTime.now());
             canceledTransaction = transactionRepository.save(canceledTransactionBuild);
-        } catch (TransactionPriceException e) {
+        } catch (TransactionException e) {
             Transaction canceledTransactionBuild = Transaction.builder()
                     .price(originPrice)
                     .transactionType(TransactionType.CANCEL)

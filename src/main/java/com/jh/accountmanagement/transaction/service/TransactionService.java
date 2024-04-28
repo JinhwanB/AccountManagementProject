@@ -9,9 +9,7 @@ import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
-import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
-import com.jh.accountmanagement.transaction.exception.NotFoundTransactionNumberException;
-import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
+import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.repository.TransactionRepository;
 import com.jh.accountmanagement.transaction.type.TransactionErrorCode;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
@@ -54,7 +52,7 @@ public class TransactionService {
         }
 
         if (request.getPrice() > account.getMoney()) { // 거래 금액이 계좌 잔액보다 큰 경우
-            throw new TransactionPriceException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
+            throw new TransactionException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage());
         }
 
         String randomNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
@@ -93,7 +91,7 @@ public class TransactionService {
         Account account = accountRepository.findByAccountNum(request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
 
         if (transaction.getPrice() != request.getPrice()) {
-            throw new TransactionPriceException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
+            throw new TransactionException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
         }
 
         if (transaction.getAccount().getAccountNum() != request.getAccountNum()) {

@@ -8,8 +8,7 @@ import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
-import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
-import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
+import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
@@ -108,7 +107,7 @@ class TransactionControllerTest {
                 .accountNum(12345)
                 .build();
 
-        given(transactionService.transactionUse(any())).willThrow(TransactionPriceException.class);
+        given(transactionService.transactionUse(any())).willThrow(TransactionException.class);
         given(transactionService.useFail(any())).willReturn(transaction);
 
         mockMvc.perform(post("/transactions/transaction")
@@ -203,7 +202,7 @@ class TransactionControllerTest {
                 .price(3000)
                 .build();
 
-        given(transactionService.canceledTransaction(any())).willThrow(TransactionPriceException.class);
+        given(transactionService.canceledTransaction(any())).willThrow(TransactionException.class);
         given(transactionService.cancelFail(any())).willReturn(transaction);
 
         mockMvc.perform(delete("/transactions/transaction")

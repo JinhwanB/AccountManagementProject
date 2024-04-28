@@ -4,8 +4,7 @@ import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
-import com.jh.accountmanagement.transaction.exception.NotFoundTransactionException;
-import com.jh.accountmanagement.transaction.exception.TransactionPriceException;
+import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,7 @@ public class TransactionController {
         Transaction transaction;
         try {
             transaction = transactionService.transactionUse(request);
-        } catch (TransactionPriceException e) {
+        } catch (TransactionException e) {
             log.error(e.getMessage());
             transaction = transactionService.useFail(request);
         }
@@ -37,7 +36,7 @@ public class TransactionController {
         Transaction transaction;
         try {
             transaction = transactionService.canceledTransaction(request);
-        } catch (TransactionPriceException | NotFoundTransactionException e) {
+        } catch (TransactionException | NotFoundTransactionException e) {
             log.error(e.getMessage());
             transaction = transactionService.cancelFail(request);
         }
