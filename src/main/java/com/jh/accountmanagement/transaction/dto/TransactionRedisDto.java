@@ -27,4 +27,19 @@ public class TransactionRedisDto {
     private String transactionNumber;
     private String transactionType;
     private String transactionResult;
+
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime transactionDate;
+
+    public TransactionCheckDto.Response toCheckResponse() {
+        return TransactionCheckDto.Response.builder()
+                .accountNum(accountNum)
+                .transactionDate(transactionDate)
+                .transactionNumber(transactionNumber)
+                .transactionResult(transactionResult)
+                .transactionPrice(price)
+                .transactionType(transactionType)
+                .build();
+    }
 }
