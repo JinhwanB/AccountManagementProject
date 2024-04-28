@@ -1,5 +1,9 @@
 package com.jh.accountmanagement.account.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.jh.accountmanagement.account.dto.AccountCheckDto;
 import com.jh.accountmanagement.account.dto.AccountCreateDto;
 import com.jh.accountmanagement.account.dto.AccountDeleteDto;
@@ -32,6 +36,8 @@ public class Account extends BaseTimeEntity {
     private long money;
 
     @Column
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime delDate;
 
     // 계좌 생성시 Response로 변경 메소드

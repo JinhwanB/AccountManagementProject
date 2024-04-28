@@ -1,5 +1,9 @@
 package com.jh.accountmanagement.account.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,5 +26,7 @@ public class AccountUser extends BaseTimeEntity {
     private String userId;
 
     @Column
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime delDate;
 }
