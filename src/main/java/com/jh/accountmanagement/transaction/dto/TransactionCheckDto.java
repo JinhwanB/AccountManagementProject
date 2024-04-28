@@ -26,7 +26,7 @@ public class TransactionCheckDto {
     @Builder(toBuilder = true)
     @ToString
     public static class Response {
-        private long accountNum;
+        private String accountNum;
         private String transactionType;
         private String transactionResult;
         private String transactionNumber;

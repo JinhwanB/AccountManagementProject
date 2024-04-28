@@ -21,8 +21,8 @@ public class TransactionUseDto {
         private String userId;
 
         @NotNull
-        @Positive
-        private long accountNum;
+        @NotBlank
+        private String accountNum;
 
         @NotNull
         @Positive
@@ -37,7 +37,7 @@ public class TransactionUseDto {
     @Builder(toBuilder = true)
     @ToString
     public static class Response {
-        private long accountNum;
+        private String accountNum;
         private String transactionResult;
         private String transactionNumber;
         private long price;

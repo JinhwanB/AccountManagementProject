@@ -21,8 +21,8 @@ public class TransactionCancelDto {
         private String transactionNumber;
 
         @NotNull
-        @Positive
-        private long accountNum;
+        @NotBlank
+        private String accountNum;
 
         @NotNull
         @Min(100)
@@ -37,7 +37,7 @@ public class TransactionCancelDto {
     @Builder(toBuilder = true)
     @ToString
     public static class Response {
-        private long accountNum;
+        private String accountNum;
         private String transactionResult;
         private String transactionNumber;
         private long canceledPrice;
