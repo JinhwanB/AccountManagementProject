@@ -30,4 +30,11 @@ public class AccountRedisDto {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime delDate;
+
+    public AccountCheckDto.Response toCheckResponse() {
+        return AccountCheckDto.Response.builder()
+                .accountNum(accountNum)
+                .money(money)
+                .build();
+    }
 }
