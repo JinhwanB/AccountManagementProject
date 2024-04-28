@@ -71,7 +71,7 @@ public class Account extends BaseTimeEntity {
         return AccountRedisDto.builder()
                 .accountNum(accountNum)
                 .regDate(this.getRegDate())
-                .ChgDate(this.getChgDate())
+                .chgDate(this.getChgDate())
                 .delDate(delDate)
                 .money(money)
                 .userId(accountUser.getUserId())
