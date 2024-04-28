@@ -100,7 +100,7 @@ public class TransactionService {
         }
 
         if (!transaction.getAccount().getAccountNum().equals(account.getAccountNum())) {
-            throw new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
+            throw new TransactionException(TransactionErrorCode.NOT_FOUND_ACCOUNT_NUMBER_BY_TRANSACTION.getMessage());
         }
 
         Account modifiedAccountBuild = account.toBuilder()
