@@ -2,6 +2,7 @@ package com.jh.accountmanagement.transaction.repository;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.exception.AccountException;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
@@ -45,7 +46,7 @@ class TransactionRepositoryTest {
         accountUser = accountUserRepository.save(accountUserBuild);
 
         Account accountBuild = Account.builder()
-                .accountNum(3204965758L)
+                .accountNum("3204965758")
                 .accountUser(accountUser)
                 .money(3000)
                 .build();
@@ -77,7 +78,7 @@ class TransactionRepositoryTest {
         Transaction transaction = transactionRepository.save(transactionBuild);
         accountRepository.save(useAccount);
 
-        Account foundAccount = accountRepository.findByAccountNum(3204965758L).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        Account foundAccount = accountRepository.findByAccountNum("3204965758").orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
         assertThat(transaction.getPrice()).isEqualTo(1000);
         assertThat(transaction.getAccount().getMoney()).isEqualTo(2000);
         assertThat(foundAccount.getMoney()).isEqualTo(2000);
@@ -106,8 +107,8 @@ class TransactionRepositoryTest {
         transactionRepository.save(transactionBuild);
         accountRepository.save(useAccount);
 
-        Account usedAccount = accountRepository.findByAccountNum(3204965758L).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
-        Transaction transaction = transactionRepository.findByTransactionNumber("12345").orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        Account usedAccount = accountRepository.findByAccountNum("3204965758").orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        Transaction transaction = transactionRepository.findByTransactionNumber("12345").orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
         Account canceledAccount = usedAccount.toBuilder()
                 .money(usedAccount.getMoney() + price)
                 .build();
@@ -155,7 +156,7 @@ class TransactionRepositoryTest {
         accountRepository.save(useAccount);
 
         Account failAccountBuild = Account.builder()
-                .accountNum(3249576829L)
+                .accountNum("3249576829")
                 .accountUser(accountUser)
                 .money(5000)
                 .build();
@@ -175,12 +176,12 @@ class TransactionRepositoryTest {
         failTransactionBuild.setChgDate(LocalDateTime.now());
         transactionRepository.save(failTransactionBuild);
 
-        Transaction failTransaction1 = transactionRepository.findByTransactionNumber("12345").orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        Transaction failTransaction1 = transactionRepository.findByTransactionNumber("12345").orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
         assertThat(failTransaction1.getTransactionNumber()).isEqualTo("12345");
         assertThat(failTransaction1.getTransactionType()).isEqualTo(TransactionType.TRANSACTION);
         assertThat(failTransaction1.getTransactionResult()).isEqualTo(TransactionResult.S);
 
-        Transaction failTransaction2 = transactionRepository.findByTransactionNumber("32325").orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        Transaction failTransaction2 = transactionRepository.findByTransactionNumber("32325").orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
         assertThat(failTransaction2.getTransactionNumber()).isEqualTo("32325");
         assertThat(failTransaction2.getTransactionType()).isEqualTo(TransactionType.CANCEL);
         assertThat(failTransaction2.getTransactionResult()).isEqualTo(TransactionResult.F);
@@ -315,7 +316,7 @@ class TransactionRepositoryTest {
     @Test
     @DisplayName("거래번호와 계좌번호 불일치")
     void diffTransactionAndAccountNum() {
-        long accountNum = 3254634590L;
+        String accountNum = "3254634590";
 
         Transaction transactionBuild = Transaction.builder()
                 .account(account)
@@ -331,8 +332,8 @@ class TransactionRepositoryTest {
 
         Transaction canceledTransaction;
         try {
-            if (accountNum != transaction.getAccount().getAccountNum()) {
-                throw new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
+            if (!accountNum.equals(transaction.getAccount().getAccountNum())) {
+                throw new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
             }
 
             Transaction canceledTransactionBuild = Transaction.builder()
@@ -346,7 +347,7 @@ class TransactionRepositoryTest {
             canceledTransactionBuild.setRegDate(LocalDateTime.now());
             canceledTransactionBuild.setChgDate(LocalDateTime.now());
             canceledTransaction = transactionRepository.save(canceledTransactionBuild);
-        } catch (NotFoundTransactionNumberException e) {
+        } catch (TransactionException e) {
             Transaction canceledTransactionBuild = Transaction.builder()
                     .price(1000)
                     .transactionType(TransactionType.CANCEL)
@@ -381,8 +382,8 @@ class TransactionRepositoryTest {
 
         String message = "";
         try {
-            transactionRepository.findByTransactionNumber("32456").orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
-        } catch (NotFoundTransactionNumberException e) {
+            transactionRepository.findByTransactionNumber("32456").orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        } catch (TransactionException e) {
             message = e.getMessage();
         }
 

@@ -2,6 +2,8 @@ package com.jh.accountmanagement.account.repository;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.exception.AccountException;
+import com.jh.accountmanagement.account.type.AccountErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,7 @@ class AccountUserRepositoryTest {
     @Test
     @DisplayName("사용자 확인")
     void userCheck() {
-        AccountUser user = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new NotFoundUserIdException("해당 아이디의 유저는 없습니다."));
+        AccountUser user = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
 
         assertThat(user.getUserId()).isEqualTo("test");
     }
@@ -42,16 +44,16 @@ class AccountUserRepositoryTest {
     @Test
     @DisplayName("사용자 찾기 실패")
     void failAccountUserId() {
-        NotFoundUserIdException exception = assertThrows(NotFoundUserIdException.class, () -> accountUserRepository.findByUserIdAndDelDate("toast", null).orElseThrow(() -> new NotFoundUserIdException("해당 유저는 없습니다.")));
-        assertThat(exception.getMessage()).isEqualTo("해당 유저는 없습니다.");
+        AccountException exception = assertThrows(AccountException.class, () -> accountUserRepository.findByUserIdAndDelDate("toast", null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage())));
+        assertThat(exception.getMessage()).isEqualTo(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage());
     }
 
     @Test
     @DisplayName("사용자와 계좌번호 불일치")
     void diffAccountUserAndAccountNum() {
-        AccountUser user = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new NotFoundUserIdException("해당 아이디의 유저는 없습니다."));
+        AccountUser user = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
         Account account = Account.builder()
-                .accountNum(3249587201L)
+                .accountNum("3249587201")
                 .accountUser(user)
                 .money(30000)
                 .build();
@@ -60,9 +62,9 @@ class AccountUserRepositoryTest {
         accountRepository.save(account);
 
         try {
-            accountRepository.findByAccountUserAndAccountNum(user, 3234586593L).orElseThrow(() -> new NotFoundAccountException("해당 계좌번호는 사용자의 계좌번호가 아닙니다."));
-        } catch (NotFoundAccountException e) {
-            assertThat(e.getMessage()).isEqualTo("해당 계좌번호는 사용자의 계좌번호가 아닙니다.");
+            accountRepository.findByAccountUserAndAccountNum(user, "3234586593").orElseThrow(() -> new AccountException(AccountErrorCode.DIFF_USER_AND_ACCOUNT_NUMBER.getMessage()));
+        } catch (AccountException e) {
+            assertThat(e.getMessage()).isEqualTo(AccountErrorCode.DIFF_USER_AND_ACCOUNT_NUMBER.getMessage());
         }
     }
 }

@@ -48,7 +48,7 @@ class AccountControllerTest {
                 .build();
         Account account = Account.builder()
                 .accountUser(accountUser)
-                .accountNum(3287495760L)
+                .accountNum("3287495760")
                 .money(3000)
                 .build();
         account.setRegDate(LocalDateTime.now());
@@ -64,7 +64,7 @@ class AccountControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value("test"))
-                .andExpect(jsonPath("$.accountNum").value(3287495760L))
+                .andExpect(jsonPath("$.accountNum").value("3287495760"))
                 .andExpect(jsonPath("$.regDate").exists());
 
     }
@@ -77,13 +77,13 @@ class AccountControllerTest {
                 .build();
         Account account = Account.builder()
                 .accountUser(accountUser)
-                .accountNum(3287495760L)
+                .accountNum("3287495760")
                 .money(3000)
                 .delDate(LocalDateTime.now())
                 .build();
         AccountDeleteDto.Request request = AccountDeleteDto.Request.builder()
                 .userId("test")
-                .accountNum(3287495760L)
+                .accountNum("3287495760")
                 .build();
 
         given(accountService.deleteAccount(any())).willReturn(account);
@@ -93,7 +93,7 @@ class AccountControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value("test"))
-                .andExpect(jsonPath("$.accountNum").value(3287495760L))
+                .andExpect(jsonPath("$.accountNum").value("3287495760"))
                 .andExpect(jsonPath("$.delDate").exists());
     }
 
@@ -105,7 +105,7 @@ class AccountControllerTest {
                 .build();
         Account account = Account.builder()
                 .accountUser(accountUser)
-                .accountNum(3287495760L)
+                .accountNum("3287495760")
                 .money(3000)
                 .build();
         AccountCheckDto.Request request = AccountCheckDto.Request.builder()
@@ -119,7 +119,7 @@ class AccountControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].accountNum").value(3287495760L))
+                .andExpect(jsonPath("$[0].accountNum").value("3287495760"))
                 .andExpect(jsonPath("$[0].money").value(3000));
     }
 }

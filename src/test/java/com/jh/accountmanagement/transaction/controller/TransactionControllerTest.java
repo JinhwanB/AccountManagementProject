@@ -6,10 +6,10 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
-import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.service.TransactionService;
+import com.jh.accountmanagement.transaction.type.TransactionErrorCode;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +45,8 @@ class TransactionControllerTest {
 
     AccountUser accountUser;
     Account account;
+    @Autowired
+    private TransactionController transactionController;
 
     @BeforeEach
     void before() {
@@ -52,7 +54,7 @@ class TransactionControllerTest {
                 .userId("test")
                 .build();
         account = Account.builder()
-                .accountNum(12345)
+                .accountNum("12345")
                 .money(5000)
                 .accountUser(accountUser)
                 .build();
@@ -73,7 +75,7 @@ class TransactionControllerTest {
         TransactionUseDto.Request request = TransactionUseDto.Request.builder()
                 .userId("test")
                 .price(1000)
-                .accountNum(12345)
+                .accountNum("12345")
                 .build();
 
         given(transactionService.transactionUse(any())).willReturn(transaction);
@@ -82,7 +84,7 @@ class TransactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.accountNum").value("12345"))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.price").value(1000))
@@ -92,33 +94,18 @@ class TransactionControllerTest {
     @Test
     @DisplayName("잔액 사용 컨트롤러 실패")
     void useMoneyFail() throws Exception {
-        Transaction transaction = Transaction.builder()
-                .transactionType(TransactionType.TRANSACTION)
-                .transactionResult(TransactionResult.F)
-                .transactionNumber("12345")
-                .accountUser(accountUser)
-                .price(1000)
-                .account(account)
-                .build();
-        transaction.setRegDate(LocalDateTime.now());
         TransactionUseDto.Request request = TransactionUseDto.Request.builder()
                 .userId("test")
                 .price(1000)
-                .accountNum(12345)
+                .accountNum("12345")
                 .build();
 
-        given(transactionService.transactionUse(any())).willThrow(TransactionException.class);
-        given(transactionService.useFail(any())).willReturn(transaction);
+        given(transactionService.transactionUse(any())).willThrow(new TransactionException(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage()));
 
         mockMvc.perform(post("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
-                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
-                .andExpect(jsonPath("$.transactionNumber").value("12345"))
-                .andExpect(jsonPath("$.price").value(1000))
-                .andExpect(jsonPath("$.regDate").exists());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -134,7 +121,7 @@ class TransactionControllerTest {
                 .build();
         transaction.setRegDate(LocalDateTime.now());
         TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
-                .accountNum(12345)
+                .accountNum("12345")
                 .transactionNumber("12345")
                 .price(1000)
                 .build();
@@ -145,7 +132,7 @@ class TransactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.accountNum").value("12345"))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.S.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.canceledPrice").value(1000))
@@ -165,23 +152,17 @@ class TransactionControllerTest {
                 .build();
         transaction.setRegDate(LocalDateTime.now());
         TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
-                .accountNum(34566)
+                .accountNum("34566")
                 .transactionNumber("12345")
                 .price(1000)
                 .build();
 
-        given(transactionService.canceledTransaction(any())).willThrow(NotFoundTransactionException.class);
-        given(transactionService.cancelFail(any())).willReturn(transaction);
+        given(transactionService.canceledTransaction(any())).willThrow(TransactionException.class);
 
         mockMvc.perform(delete("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
-                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
-                .andExpect(jsonPath("$.transactionNumber").value("12345"))
-                .andExpect(jsonPath("$.canceledPrice").value(1000))
-                .andExpect(jsonPath("$.transactionDate").exists());
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -197,23 +178,17 @@ class TransactionControllerTest {
                 .build();
         transaction.setRegDate(LocalDateTime.now());
         TransactionCancelDto.Request request = TransactionCancelDto.Request.builder()
-                .accountNum(12345)
+                .accountNum("12345")
                 .transactionNumber("12345")
                 .price(3000)
                 .build();
 
         given(transactionService.canceledTransaction(any())).willThrow(TransactionException.class);
-        given(transactionService.cancelFail(any())).willReturn(transaction);
 
         mockMvc.perform(delete("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
-                .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
-                .andExpect(jsonPath("$.transactionNumber").value("12345"))
-                .andExpect(jsonPath("$.canceledPrice").value(1000))
-                .andExpect(jsonPath("$.transactionDate").exists());
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -228,17 +203,12 @@ class TransactionControllerTest {
                 .transactionNumber("12345")
                 .build();
         transaction.setRegDate(LocalDateTime.now());
-        TransactionCheckDto.Request request = TransactionCheckDto.Request.builder()
-                .transactionNumber("12345")
-                .build();
 
-        given(transactionService.checkTransaction(any())).willReturn(transaction);
+        given(transactionService.getTransaction(any())).willReturn(transaction);
 
-        mockMvc.perform(get("/transactions/transaction")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(get("/transactions/transaction?transactionNumber=12345"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountNum").value(12345))
+                .andExpect(jsonPath("$.accountNum").value("12345"))
                 .andExpect(jsonPath("$.transactionType").value(TransactionType.TRANSACTION.getMessage()))
                 .andExpect(jsonPath("$.transactionResult").value(TransactionResult.F.getMessage()))
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))

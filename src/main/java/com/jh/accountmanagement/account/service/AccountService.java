@@ -101,9 +101,7 @@ public class AccountService {
         Account deletedAccount = account.toBuilder()
                 .delDate(LocalDateTime.now())
                 .build();
-        if (redisUtils.hasKey(deletedAccount.getAccountNum())) {
-            redisUtils.delete(deletedAccount.getAccountNum());
-        }
+        redisUtils.delete(deletedAccount.getAccountNum());
         return accountRepository.save(deletedAccount);
     }
 

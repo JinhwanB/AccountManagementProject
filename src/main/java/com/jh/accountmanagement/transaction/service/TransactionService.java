@@ -2,12 +2,14 @@ package com.jh.accountmanagement.transaction.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
+import com.jh.accountmanagement.account.exception.AccountException;
 import com.jh.accountmanagement.account.repository.AccountRepository;
-import com.jh.accountmanagement.account.repository.AccountUserRepository;
+import com.jh.accountmanagement.account.service.AccountService;
+import com.jh.accountmanagement.account.service.AccountUserService;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
+import com.jh.accountmanagement.config.RedisUtils;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
-import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.exception.TransactionException;
 import com.jh.accountmanagement.transaction.repository.TransactionRepository;
@@ -27,8 +29,10 @@ import java.util.UUID;
 @Slf4j
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final AccountUserRepository accountUserRepository;
     private final AccountRepository accountRepository;
+    private final AccountService accountService;
+    private final AccountUserService accountUserService;
+    private final RedisUtils redisUtils;
 
     /**
      * 잔액 사용
@@ -45,10 +49,10 @@ public class TransactionService {
         log.info("계좌번호={}", request.getAccountNum());
         log.info("거래금액={}", request.getPrice());
 
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
-        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        AccountUser accountUser = accountUserService.getUser(request.getUserId());
+        Account account = accountService.getAccount(request.getAccountNum());
         if (account.getDelDate() != null) {
-            throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
+            throw new AccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
         }
 
         if (request.getPrice() > account.getMoney()) { // 거래 금액이 계좌 잔액보다 큰 경우
@@ -62,6 +66,7 @@ public class TransactionService {
                 .money(account.getMoney() - request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(accountBuild);
+        redisUtils.update(modifiedAccount.getAccountNum(), modifiedAccount);
 
         Transaction transaction = Transaction.builder() // 거래 저장
                 .price(request.getPrice())
@@ -87,21 +92,22 @@ public class TransactionService {
         log.info("계좌번호={}", request.getAccountNum());
         log.info("거래금액={}", request.getPrice());
 
-        Transaction transaction = transactionRepository.findByTransactionNumber(request.getTransactionNumber()).orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
-        Account account = accountRepository.findByAccountNum(request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+        Transaction transaction = getTransaction(request.getTransactionNumber());
+        Account account = accountService.getAccount(request.getAccountNum());
 
         if (transaction.getPrice() != request.getPrice()) {
             throw new TransactionException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage());
         }
 
-        if (transaction.getAccount().getAccountNum() != request.getAccountNum()) {
-            throw new NotFoundTransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
+        if (!transaction.getAccount().getAccountNum().equals(account.getAccountNum())) {
+            throw new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage());
         }
 
         Account modifiedAccountBuild = account.toBuilder()
                 .money(account.getMoney() + request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(modifiedAccountBuild);
+        redisUtils.update(modifiedAccount.getAccountNum(), modifiedAccount);
 
         String randomNum = UUID.randomUUID().toString();
         String transactionNumber = createTransactionNumber(randomNum);
@@ -117,25 +123,25 @@ public class TransactionService {
         return transactionRepository.save(canceledTransaction);
     }
 
-    /**
-     * 거래 확인
-     * 없는 거래 번호인 경우 exception
-     *
-     * @param request 거래 번호
-     * @return 계좌번호, 거래종류, 거래결과, 거래번호, 거래금액, 거래일시
-     */
-    public Transaction checkTransaction(TransactionCheckDto.Request request) {
-        log.info("거래번호={}", request.getTransactionNumber());
+    // 거래 가져올 시 redis 확인
+    public Transaction getTransaction(String transactionNumber) {
+        log.info("거래번호={}", transactionNumber);
 
-        return transactionRepository.findByTransactionNumber(request.getTransactionNumber()).orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        if (redisUtils.hasKey(transactionNumber)) {
+            return (Transaction) redisUtils.get(transactionNumber);
+        }
+
+        Transaction transaction = transactionRepository.findByTransactionNumber(transactionNumber).orElseThrow(() -> new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+        redisUtils.set(transactionNumber, transaction);
+        return transaction;
     }
 
     // 거래 시 Exception 발생했을 때 실패 Transaction 저장
-    public Transaction useFail(TransactionUseDto.Request request) {
-        AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(request.getUserId(), null).orElseThrow(() -> new NotFoundUserIdException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
-        Account account = accountRepository.findByAccountUserAndAccountNum(accountUser, request.getAccountNum()).orElseThrow(() -> new NotFoundAccountException(AccountErrorCode.NOT_FOUND_ACCOUNT.getMessage()));
+    public void useFail(TransactionUseDto.Request request) {
+        AccountUser accountUser = accountUserService.getUser(request.getUserId());
+        Account account = accountService.getAccount(request.getAccountNum());
         if (account.getDelDate() != null) {
-            throw new AlreadyDeletedAccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
+            throw new AccountException(AccountErrorCode.ALREADY_DELETED_ACCOUNT.getMessage());
         }
 
         String randomNumber = UUID.randomUUID().toString(); // 거래 번호 uuid 생성
@@ -149,12 +155,12 @@ public class TransactionService {
                 .accountUser(accountUser)
                 .account(account)
                 .build();
-        return transactionRepository.save(transaction);
+        transactionRepository.save(transaction);
     }
 
     // 거래 취소 실패 시 exception 발생했을 때 실패 Transaction 저장
-    public Transaction cancelFail(TransactionCancelDto.Request request) {
-        Transaction transaction = transactionRepository.findByTransactionNumber(request.getTransactionNumber()).orElseThrow(() -> new NotFoundTransactionNumberException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+    public void cancelFail(TransactionCancelDto.Request request) {
+        Transaction transaction = getTransaction(request.getTransactionNumber());
 
         String randomNum = UUID.randomUUID().toString();
         String transactionNumber = createTransactionNumber(randomNum);
@@ -167,14 +173,20 @@ public class TransactionService {
                 .account(transaction.getAccount())
                 .transactionNumber(transactionNumber)
                 .build();
-        return transactionRepository.save(failedTransaction);
+        transactionRepository.save(failedTransaction);
     }
 
     // 생성한 uuid 중복체크 후 거래번호로 생성
     private String createTransactionNumber(String randomNumber) {
         String transactionNumber = randomNumber;
         while (true) { // 중복 체크
-            Transaction sameTransactionNumber = transactionRepository.findByTransactionNumber(transactionNumber).orElse(null);
+            Transaction sameTransactionNumber;
+            try {
+                sameTransactionNumber = getTransaction(transactionNumber);
+            } catch (TransactionException e) {
+                sameTransactionNumber = null;
+            }
+
             if (sameTransactionNumber == null) {
                 break;
             }
