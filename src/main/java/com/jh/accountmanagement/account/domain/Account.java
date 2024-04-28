@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.jh.accountmanagement.account.dto.AccountCheckDto;
 import com.jh.accountmanagement.account.dto.AccountCreateDto;
 import com.jh.accountmanagement.account.dto.AccountDeleteDto;
+import com.jh.accountmanagement.account.dto.AccountRedisDto;
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -63,6 +64,17 @@ public class Account extends BaseTimeEntity {
         return AccountCheckDto.Response.builder()
                 .accountNum(this.accountNum)
                 .money(this.money)
+                .build();
+    }
+
+    public AccountRedisDto toRedisDto() {
+        return AccountRedisDto.builder()
+                .accountNum(accountNum)
+                .regDate(this.getRegDate())
+                .ChgDate(this.getChgDate())
+                .delDate(delDate)
+                .money(money)
+                .userId(accountUser.getUserId())
                 .build();
     }
 }
