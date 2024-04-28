@@ -5,6 +5,7 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.global.BaseTimeEntity;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionCheckDto;
+import com.jh.accountmanagement.transaction.dto.TransactionRedisDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
 import com.jh.accountmanagement.transaction.type.TransactionResult;
 import com.jh.accountmanagement.transaction.type.TransactionType;
@@ -73,6 +74,18 @@ public class Transaction extends BaseTimeEntity {
                 .transactionNumber(this.transactionNumber)
                 .transactionPrice(this.price)
                 .accountNum(this.account.getAccountNum())
+                .build();
+    }
+
+    public TransactionRedisDto toRedisDto() {
+        return TransactionRedisDto.builder()
+                .accountDelDate(this.account.getDelDate())
+                .price(price)
+                .transactionNumber(transactionNumber)
+                .transactionResult(transactionResult.getMessage())
+                .transactionType(transactionType.getMessage())
+                .accountMoney(account.getMoney())
+                .accountUserId(accountUser.getUserId())
                 .build();
     }
 }
