@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
+import com.jh.accountmanagement.config.RedisUtils;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
 import com.jh.accountmanagement.transaction.dto.TransactionUseDto;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,6 +38,9 @@ class TransactionControllerTest {
 
     @MockBean
     private AccountUserRepository accountUserRepository;
+
+    @MockBean
+    private RedisUtils redisUtils;
 
     @Autowired
     MockMvc mockMvc;
@@ -92,7 +97,7 @@ class TransactionControllerTest {
     }
 
     @Test
-    @DisplayName("잔액 사용 컨트롤러 실패")
+    @DisplayName("잔액 사용 컨트롤러 실패 - 결제 금액이 사용자의 소유 금액보다 큼")
     void useMoneyFail() throws Exception {
         TransactionUseDto.Request request = TransactionUseDto.Request.builder()
                 .userId("test")
@@ -105,7 +110,8 @@ class TransactionControllerTest {
         mockMvc.perform(post("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(TransactionErrorCode.PRICE_MORE_THAN_ACCOUNT_MONEY.getMessage()));
     }
 
     @Test
@@ -157,12 +163,13 @@ class TransactionControllerTest {
                 .price(1000)
                 .build();
 
-        given(transactionService.canceledTransaction(any())).willThrow(TransactionException.class);
+        given(transactionService.canceledTransaction(any())).willThrow(new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
 
         mockMvc.perform(delete("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is5xxServerError())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
     }
 
     @Test
@@ -183,12 +190,13 @@ class TransactionControllerTest {
                 .price(3000)
                 .build();
 
-        given(transactionService.canceledTransaction(any())).willThrow(TransactionException.class);
+        given(transactionService.canceledTransaction(any())).willThrow(new TransactionException(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage()));
 
         mockMvc.perform(delete("/transactions/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().is5xxServerError())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(TransactionErrorCode.DIFF_PRICE_AND_ACCOUNT_MONEY.getMessage()));
     }
 
     @Test
@@ -214,5 +222,15 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.transactionNumber").value("12345"))
                 .andExpect(jsonPath("$.transactionPrice").value(1000))
                 .andExpect(jsonPath("$.transactionDate").exists());
+    }
+
+    @Test
+    @DisplayName("거래 확인 실패")
+    void checkFail() throws Exception {
+        given(transactionService.getTransaction(any())).willThrow(new TransactionException(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
+
+        mockMvc.perform(get("/transactions/transaction?transactionNumber=12345"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(TransactionErrorCode.NOT_FOUND_TRANSACTION_NUMBER.getMessage()));
     }
 }
