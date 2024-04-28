@@ -25,26 +25,26 @@ public class TransactionController {
     private final RedisUtils redisUtils;
 
     @PostMapping("/transaction")
-    public ResponseEntity<TransactionUseDto.Response> useMoney(@Valid @RequestBody TransactionUseDto.Request request) {
+    public ResponseEntity<Object> useMoney(@Valid @RequestBody TransactionUseDto.Request request) {
         try {
             Transaction transaction = transactionService.transactionUse(request);
             return ResponseEntity.ok(transaction.toUseResponse());
         } catch (TransactionException e) {
             log.error(e.getMessage());
             transactionService.useFail(request);
-            throw e;
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/transaction")
-    public ResponseEntity<TransactionCancelDto.Response> cancelMoney(@Valid @RequestBody TransactionCancelDto.Request request) {
+    public ResponseEntity<Object> cancelMoney(@Valid @RequestBody TransactionCancelDto.Request request) {
         try {
             Transaction transaction = transactionService.canceledTransaction(request);
             return ResponseEntity.ok(transaction.toCancelResponse());
         } catch (TransactionException e) {
             log.error(e.getMessage());
             transactionService.cancelFail(request);
-            throw e;
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
