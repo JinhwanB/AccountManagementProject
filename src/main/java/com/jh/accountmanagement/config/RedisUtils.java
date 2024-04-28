@@ -10,25 +10,25 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class RedisUtils {
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, List<>> accountRedisTemplate;
 
     public void set(String key, Object o) {
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
-        redisTemplate.opsForValue().set(key, o, 30, TimeUnit.MINUTES);
+        accountRedisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
+        accountRedisTemplate.opsForValue().set(key, o, 30, TimeUnit.MINUTES);
     }
 
     public Object get(String key) {
-        return redisTemplate.opsForValue().get(key);
+        return accountRedisTemplate.opsForValue().get(key);
     }
 
     public void delete(String key) {
         if (hasKey(key)) {
-            redisTemplate.delete(key);
+            accountRedisTemplate.delete(key);
         }
     }
 
     public boolean hasKey(String key) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+        return Boolean.TRUE.equals(accountRedisTemplate.hasKey(key));
     }
 
     public void update(String key, Object o) {

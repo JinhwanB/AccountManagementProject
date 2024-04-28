@@ -4,7 +4,6 @@ import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.exception.AccountException;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
-import com.jh.accountmanagement.config.RedisUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +21,6 @@ import static org.mockito.BDDMockito.given;
 class AccountUserServiceTest {
     @Mock
     private AccountUserRepository accountUserRepository;
-
-    @Mock
-    private RedisUtils redisUtils;
 
     @InjectMocks
     private AccountUserService accountUserService;
