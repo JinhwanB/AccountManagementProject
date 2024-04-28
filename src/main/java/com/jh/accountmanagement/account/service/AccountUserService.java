@@ -22,11 +22,11 @@ public class AccountUserService {
         log.info("사용자 아이디={}", userId);
 
         if (redisUtils.hasKey(userId)) {
-            return redisUtils.get(userId);
+            return (AccountUser) redisUtils.get(userId);
         }
 
         AccountUser accountUser = accountUserRepository.findByUserIdAndDelDate(userId, null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
-        redisUtils.userSet(userId, accountUser);
+        redisUtils.set(userId, accountUser);
         return accountUser;
     }
 }
