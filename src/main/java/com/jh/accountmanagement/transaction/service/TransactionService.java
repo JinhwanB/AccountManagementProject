@@ -2,9 +2,6 @@ package com.jh.accountmanagement.transaction.service;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
-import com.jh.accountmanagement.account.exception.AlreadyDeletedAccountException;
-import com.jh.accountmanagement.account.exception.NotFoundAccountException;
-import com.jh.accountmanagement.account.exception.NotFoundUserIdException;
 import com.jh.accountmanagement.account.repository.AccountRepository;
 import com.jh.accountmanagement.account.repository.AccountUserRepository;
 import com.jh.accountmanagement.account.type.AccountErrorCode;

@@ -2,8 +2,6 @@ package com.jh.accountmanagement.account.repository;
 
 import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
-import com.jh.accountmanagement.account.exception.NotFoundAccountException;
-import com.jh.accountmanagement.account.exception.NotFoundUserIdException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
