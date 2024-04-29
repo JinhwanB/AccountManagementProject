@@ -38,12 +38,7 @@ class TransactionRepositoryTest {
 
     @BeforeEach
     void before() {
-        AccountUser accountUserBuild = AccountUser.builder()
-                .userId("test")
-                .build();
-        accountUserBuild.setRegDate(LocalDateTime.now());
-        accountUserBuild.setChgDate(LocalDateTime.now());
-        accountUser = accountUserRepository.save(accountUserBuild);
+        accountUser = accountUserRepository.findByUserIdAndDelDate("test", null).orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUNT_USER_ID.getMessage()));
 
         Account accountBuild = Account.builder()
                 .accountNum("3204965758")
