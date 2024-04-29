@@ -24,9 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
@@ -63,7 +63,7 @@ public class TransactionService {
         String transactionNumber = createTransactionNumber(randomNumber);
 
         Account accountBuild = account.toBuilder() // 계좌의 잔액 수정 후 저장
-                .money(account.getMoney() - request.getPrice())
+                .money(account.getMoney() - request.getPrice() <= 0 ? 0 : account.getMoney() - request.getPrice())
                 .build();
         Account modifiedAccount = accountRepository.save(accountBuild);
         redisUtils.deleteAccount(modifiedAccount.getAccountNum());
@@ -158,6 +158,7 @@ public class TransactionService {
     }
 
     // 거래 취소 실패 시 exception 발생했을 때 실패 Transaction 저장
+    @Transactional
     public void cancelFail(TransactionCancelDto.Request request) {
         Transaction transaction = getTransaction(request.getTransactionNumber());
 
