@@ -1,24 +1,54 @@
-# Getting Started
+# 계좌 관리 시스템 프로젝트
 
-### Reference Documentation
-For further reference, please consider the following sections:
+spring boot와 java를 활용하여 계좌 관리 시스템을 만드는 프로젝트
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/gradle-plugin/reference/html/)
-* [Create an OCI image](https://docs.spring.io/spring-boot/docs/3.2.5/gradle-plugin/reference/html/#build-image)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#data.sql.jpa-and-spring-data)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
+# 프로젝트 소개
 
-### Guides
-The following guides illustrate how to use some features concretely:
+- Account(계좌) 시스템은 사용자와 계좌 정보에 대한 거래 관리 기능을 제공하는 시스템이다.
+- 구현의 편리를 위해 사용자 정보는 프로젝트 시작 시 자동으로 데이터가 입력 되도록 한다.
+- 계좌 추가/해지/확인, 거래 생성/취소/확인 총 6 가지 API를 제공한다.
+- 거래금액을 늘리거나 줄이는 과정에서 여러 쓰레드 혹은 인스턴스에서 같은 계좌에 접근할 경우 동시성 이슈로 인한 lost update 가 발생할 수 있으므로 이 부분 해결 필요.
 
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+# API 명세서
 
-### Additional Links
-These additional references should also help you:
+## account API
 
-* [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
+- 계좌 생성
+    - 파라미터: 사용자 ID, 초기 잔액
+    - 결과
+        - 실패: 사용자 없는 경우, 계좌가 10개(사용자당 최대 보유 가능 계좌)인 경우 실패 응답
+        - 성공: 생성된 계좌번호(10자리 랜덤 숫자), 사용자 이이디, 등록일시
+
+- 계좌 해지
+    - 파라미터: 사용자 ID, 계좌번호
+    - 결과
+        - 실패: 사용자 없는 경우, 사용자 아이디와 계좌 소유주가 다른 경우, 계좌가 이미 해지 상태인 경우, 잔액이 있는 경우 실패 응답
+        - 성공: 사용자 아이디, 계좌번호, 해지일시
+
+- 계좌 확인
+    - 파라미터: 사용자 ID
+    - 결과
+        - 실패: 사용자가 없는 경우 실패 응답
+        - 성공: (계좌번호, 잔액) 정보를 Json list 형식으로 응답
+
+## Transaction(거래) API
+
+- 잔액 사용
+    - 파라미터: 사용자 ID, 계좌 번호, 거래 금액
+    - 결과
+        - 실패: 사용자가 없는 경우, 사용자 아이디와 계좌 소유주가 다른 경우, 계좌가 이미 해지 상태인 경우, 거래금액이 잔액보다 큰 경우
+        - 성공: 계좌번호, 거래 결과, 거래 번호, 거래 금액, 거래일시
+
+- 잔액 사용 취소
+    - 파라미터: 거래 번호, 계좌번호, 거래금액
+    - 결과
+        - 실패: 원거래 금액과 취소 금액이 다른 경우, 해당 거래의 계좌 정보가 다른 경우, 해당 거래가 이미 취소가 완료된 거래인 경우
+        - 성공: 계좌 번호, 거래 결과, 거래 번호, 거래금액, 거래일시
+
+- 거래 확인
+    - 파라미터: 거래번호
+    - 결과
+        - 실패: 해당 거래번호가 없는 경우
+        - 성공: 계좌번호, 거래종류(잔액 사용, 잔액 사용 취소), 거래 결과, 거래번호, 거래금액, 거래일시
+            - 성공 거래 뿐 아니라 실패한 거래도 거래 확인 가능
 
