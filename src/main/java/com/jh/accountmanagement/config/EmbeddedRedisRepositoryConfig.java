@@ -19,7 +19,7 @@ import java.time.Duration;
 
 @Configuration
 @EnableRedisRepositories
-public class RedisRepositoryConfig {
+public class EmbeddedRedisRepositoryConfig {
     @Value("${spring.data.redis.host}")
     private String redisHost;
 
