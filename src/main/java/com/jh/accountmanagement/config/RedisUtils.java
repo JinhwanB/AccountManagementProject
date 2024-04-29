@@ -19,6 +19,7 @@ public class RedisUtils {
 
     public void setAccount(String key, AccountRedisDto o) {
         ListOperations<String, AccountRedisDto> accountList = accountRedisTemplate.opsForList();
+        accountRedisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
         accountList.rightPush(key, o);
         accountRedisTemplate.expire(key, 30, TimeUnit.MINUTES);
     }
