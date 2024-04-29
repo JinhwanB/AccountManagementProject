@@ -4,7 +4,6 @@ import com.jh.accountmanagement.account.domain.Account;
 import com.jh.accountmanagement.account.domain.AccountUser;
 import com.jh.accountmanagement.account.exception.AccountException;
 import com.jh.accountmanagement.account.type.AccountErrorCode;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +21,6 @@ class AccountUserRepositoryTest {
 
     @Autowired
     private AccountRepository accountRepository;
-
-    @BeforeEach
-    void before() {
-        AccountUser accountUserBuild = AccountUser.builder()
-                .userId("test")
-                .build();
-        accountUserBuild.setRegDate(LocalDateTime.now());
-        accountUserBuild.setChgDate(LocalDateTime.now());
-        accountUserRepository.save(accountUserBuild);
-    }
 
     @Test
     @DisplayName("사용자 확인")
