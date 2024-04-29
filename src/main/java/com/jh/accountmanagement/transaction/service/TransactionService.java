@@ -103,6 +103,10 @@ public class TransactionService {
             throw new TransactionException(TransactionErrorCode.NOT_FOUND_ACCOUNT_NUMBER_BY_TRANSACTION.getMessage());
         }
 
+        if (transaction.getTransactionType().equals(TransactionType.CANCEL) && transaction.getTransactionResult().equals(TransactionResult.S)) {
+            throw new TransactionException(TransactionErrorCode.ALREADY_CANCELED_TRANSACTION.getMessage());
+        }
+
         Account modifiedAccountBuild = account.toBuilder()
                 .money(account.getMoney() + request.getPrice())
                 .build();
