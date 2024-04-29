@@ -1,5 +1,6 @@
 package com.jh.accountmanagement.transaction.controller;
 
+import com.jh.accountmanagement.aop.AccountLock;
 import com.jh.accountmanagement.config.RedisUtils;
 import com.jh.accountmanagement.transaction.domain.Transaction;
 import com.jh.accountmanagement.transaction.dto.TransactionCancelDto;
@@ -24,6 +25,7 @@ public class TransactionController {
     private final RedisUtils redisUtils;
 
     @PostMapping("/transaction")
+    @AccountLock
     public ResponseEntity<Object> useMoney(@Valid @RequestBody TransactionUseDto.Request request) {
         try {
             Transaction transaction = transactionService.transactionUse(request);
@@ -36,6 +38,7 @@ public class TransactionController {
     }
 
     @DeleteMapping("/transaction")
+    @AccountLock
     public ResponseEntity<Object> cancelMoney(@Valid @RequestBody TransactionCancelDto.Request request) {
         try {
             Transaction transaction = transactionService.canceledTransaction(request);
